@@ -1,0 +1,25 @@
+test.md
+
+# Ignore heavy regenerable data, but keep small cross-run state files
+# so the GitHub Actions scheduler has continuity between weekly runs.
+data/*
+!data/published_ids.json
+!data/llm_summaries_cache.json
+
+newsletterenv/
+.venv/
+
+
+AIassistanceLog.md
+
+.env
+**/.env
+
+.DS_Store
+.vscode/
+
+__pycache__/
+*.egg-info/
+
+
+
