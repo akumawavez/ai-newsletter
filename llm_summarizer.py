@@ -133,6 +133,9 @@ def _client():
 
 def _call_model(client, item, model):
     """One LLM round-trip. Returns a dict with ``tech`` and ``nontech``."""
+    import time
+
+    start = time.perf_counter()
     response = client.chat.completions.create(
         model=model,
         temperature=0.2,
@@ -142,6 +145,22 @@ def _call_model(client, item, model):
             {"role": "user", "content": _build_user_prompt(item)},
         ],
     )
+    latency_sec = time.perf_counter() - start
+    usage = getattr(response, "usage", None)
+    prompt_tokens = int(getattr(usage, "prompt_tokens", 0) or 0)
+    completion_tokens = int(getattr(usage, "completion_tokens", 0) or 0)
+
+    try:
+        from mlflow_tracker import record_llm_usage
+
+        record_llm_usage(
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            latency_sec=latency_sec,
+        )
+    except ImportError:
+        pass
+
     raw = response.choices[0].message.content or "{}"
     parsed = json.loads(raw)
 
@@ -164,6 +183,12 @@ def summarize_for_audiences(item, model=None, use_cache=True):
     cache = _load_cache() if use_cache else {}
 
     if use_cache and item_id and item_id in cache:
+        try:
+            from mlflow_tracker import record_llm_usage
+
+            record_llm_usage(cache_hit=True)
+        except ImportError:
+            pass
         return cache[item_id]
 
     client = _client()
@@ -175,6 +200,12 @@ def summarize_for_audiences(item, model=None, use_cache=True):
     try:
         summaries = _call_model(client, item, model)
     except Exception as exc:
+        try:
+            from mlflow_tracker import record_llm_usage
+
+            record_llm_usage(error=True)
+        except ImportError:
+            pass
         print(f"LLM call failed for item {item_id or '?'}: {exc}. "
               "Falling back to heuristic summary.")
         return _heuristic_fallback(item)

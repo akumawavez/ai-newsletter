@@ -132,19 +132,71 @@ def _coerce_date(value):
 
 
 def get_week_window(reference_date=None):
-    """Return Monday and Sunday for the week containing ``reference_date``.
+    """Return Monday–Sunday for the week **before** the week of ``reference_date``.
 
-  If ``reference_date`` is omitted, uses today's local date.
+    The selected date is treated as an edition anchor (e.g. the day you
+    publish). The newsletter covers the prior calendar week.
+
+    Example: ``reference_date`` = 2026-05-19 (any day in the May 18–24
+    week) → ``2026-05-11`` (Mon) through ``2026-05-17`` (Sun).
+
+    If ``reference_date`` is omitted, uses today's local date.
     """
     day = _coerce_date(reference_date)
-    monday = day - timedelta(days=day.weekday())
-    sunday = monday + timedelta(days=6)
-    return monday, sunday
+    this_week_monday = day - timedelta(days=day.weekday())
+    prior_monday = this_week_monday - timedelta(days=7)
+    prior_sunday = prior_monday + timedelta(days=6)
+    return prior_monday, prior_sunday
 
 
 def get_current_week_window():
-    """Return Monday–Sunday for the current local week."""
+    """Return the prior-week Mon–Sun window anchored on today."""
     return get_week_window()
+
+
+def get_dataset_earliest_date():
+    """Earliest ``created_at`` in the ingested dataset, if available."""
+    if not DB_PATH.exists():
+        return None
+
+    with sqlite3.connect(DB_PATH) as conn:
+        row = conn.execute(
+            """
+            SELECT MIN(created_at)
+            FROM llmops_case_studies
+            WHERE created_at IS NOT NULL AND created_at != ''
+            """
+        ).fetchone()
+
+    if not row or not row[0]:
+        return None
+
+    parsed = pd.to_datetime(row[0], errors="coerce")
+    if pd.isna(parsed):
+        return None
+
+    return parsed.date()
+
+
+def get_selectable_date_bounds():
+    """Return ``(min_date, max_date)`` for the Streamlit edition-date picker.
+
+    * ``max_date`` is today (future dates are not allowed).
+    * ``min_date`` is one week after the earliest data point in the DB,
+      so a full prior-week window exists inside the dataset.
+    """
+    today = datetime.now().date()
+    earliest = get_dataset_earliest_date()
+
+    if earliest is None:
+        min_date = today - timedelta(days=14)
+    else:
+        min_date = earliest + timedelta(days=7)
+
+    if min_date > today:
+        min_date = today
+
+    return min_date, today
 
 
 def clean_text(value):
@@ -241,19 +293,17 @@ def save_published_ids(new_ids):
         print(f"Warning: could not write {PUBLISHED_IDS_PATH} ({exc}).")
 
 
-def apply_freshness_filter(df, lookback_days, week_end):
-    """Drop items older than ``lookback_days`` before ``week_end``.
+def apply_freshness_filter(df, week_start, week_end, lookback_days=DEFAULT_LOOKBACK_DAYS):
+    """Keep items whose ``created_at`` falls in the newsletter week when possible.
 
-    Items with a missing or unparseable ``created_at`` are kept on
-    purpose: the upstream HF dataset has gaps in timestamps and
-    silently emptying the newsletter would be worse than including
-    a few undated items.
+    Priority order:
 
-    The Hugging Face dataset is a static snapshot rather than a live
-    feed, so a strict 7-day window is often empty. When that happens
-    we widen the window progressively (30 -> 90 -> 365 days, then no
-    cutoff) and log the fallback. This keeps the pipeline runnable on
-    any vintage of the snapshot without manual tweaks.
+    1. ``created_date`` within ``week_start`` … ``week_end`` (the prior week).
+    2. Rolling lookback ending on ``week_end`` (7 → 30 → 90 → 365 days).
+    3. No date cutoff (static HF snapshot fallback).
+
+    Rows with missing ``created_at`` are always kept so the newsletter
+  does not empty out when timestamps are sparse.
     """
     if "created_at" not in df.columns:
         return df
@@ -263,26 +313,38 @@ def apply_freshness_filter(df, lookback_days, week_end):
         df["created_at"], errors="coerce"
     ).dt.date
 
-    fallback_windows = [lookback_days, 30, 90, 365, None]
-    tried = set()
+    undated = df["created_date"].isna()
 
-    for window in fallback_windows:
-        if window in tried:
-            continue
-        tried.add(window)
+    strategies = [
+        (
+            f"in-week {week_start}–{week_end}",
+            undated
+            | (
+                (df["created_date"] >= week_start)
+                & (df["created_date"] <= week_end)
+            ),
+        ),
+    ]
 
-        if window is None:
-            keep = pd.Series(True, index=df.index)
-            label = "no cutoff"
-        else:
-            cutoff = week_end - timedelta(days=window)
-            keep = df["created_date"].isna() | (df["created_date"] >= cutoff)
-            label = f">= {cutoff} ({window}d)"
+    for window in [lookback_days, 30, 90, 365]:
+        cutoff = week_end - timedelta(days=window)
+        strategies.append(
+            (
+                f">= {cutoff} ({window}d lookback)",
+                undated | (df["created_date"] >= cutoff),
+            )
+        )
 
+    strategies.append(("no cutoff", pd.Series(True, index=df.index)))
+
+    for label, keep in strategies:
         if int(keep.sum()) > 0:
             print(f"Freshness filter ({label}): kept {int(keep.sum())} / {len(df)}")
-            if window != lookback_days:
-                print(f"  (widened from {lookback_days}d because the strict window was empty)")
+            if not label.startswith("in-week"):
+                print(
+                    f"  (widened from {week_start}–{week_end} "
+                    "because the in-week window was empty)"
+                )
             return df[keep].copy()
 
     print("Freshness filter: dataset is empty.")
@@ -546,7 +608,8 @@ def process_and_analyze(
         Freshness window in days. Items whose ``created_at`` is older
         than this are dropped before scoring.
     reference_date : date-like, optional
-        Any day in the target week (Mon–Sun). Defaults to today.
+        Edition anchor date. The newsletter covers the prior Mon–Sun.
+        Defaults to today.
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -554,10 +617,10 @@ def process_and_analyze(
     week_start, week_end = get_week_window(reference_date)
 
     print(f"Processing records: {len(df)}")
-    print(f"Current week window: {week_start} to {week_end}")
+    print(f"Newsletter week (prior Mon–Sun): {week_start} to {week_end}")
 
     # Step 4: Deduplication + Freshness Filtering
-    df = apply_freshness_filter(df, lookback_days, week_end)
+    df = apply_freshness_filter(df, week_start, week_end, lookback_days)
     df = apply_dedup_filter(df, load_published_ids())
 
     if df.empty:

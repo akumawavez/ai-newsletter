@@ -75,6 +75,8 @@ ai-weeklynewsletter-generator/
 ├── llm_summarizer.py                # Stage 7: audience-specific LLM summaries with cache
 ├── generate_newsletter.py           # Stage 8: render Markdown newsletter
 ├── ragas_evaluator.py               # RAGAS LLM-as-judge evaluation for summaries
+├── mlflow_tracker.py                # MLflow metrics + monitoring for pipeline/eval
+├── mlflow_ui.py                     # Streamlit evaluation & monitoring panels
 ├── app.py                           # Streamlit generator UI (+ RAGAS scores panel)
 ├── pages/explore.py                 # Streamlit dataset explorer
 ├── pyproject.toml                   # Project metadata + dependencies
@@ -116,7 +118,7 @@ uv run python generate_newsletter.py   # render Markdown -> newsletter_outputs/l
 uv run streamlit run app.py
 ```
 
-**Main Python dependencies** (see `pyproject.toml` / `uv.lock`): `datasets`, `pandas`, `openai`, `streamlit`, **`ragas`**, `langchain-openai` (embeddings for RAGAS answer relevancy).
+**Main Python dependencies** (see `pyproject.toml` / `uv.lock`): `datasets`, `pandas`, `openai`, `streamlit`, **`ragas`**, **`mlflow`**, `langchain-openai` (embeddings for RAGAS answer relevancy).
 
 **Re-running:** the pipeline is idempotent. `data/published_ids.json` tracks items already published, and `data/llm_summaries_cache.json` caches LLM outputs by item id, so subsequent runs are cheap and skip duplicates automatically.
 
@@ -128,6 +130,7 @@ uv run streamlit run app.py
 | `LLM_MODEL` | `gpt-5.4-nano` | Chat model for newsletter summarization. |
 | `RAGAS_LLM_MODEL` | same as `LLM_MODEL` | Judge model for RAGAS metrics (faithfulness, context precision, etc.). |
 | `RAGAS_EMBEDDING_MODEL` | `text-embedding-3-small` | Embeddings for RAGAS answer relevancy. |
+| `MLFLOW_TRACKING_URI` | `sqlite:///data/mlflow.db` | MLflow tracking store for evaluation + monitoring metrics. |
 | `NEWSLETTER_LOOKBACK_DAYS` | `7` | Drop items older than this before scoring. Auto-widens to 30 / 90 / 365 days when the strict window is empty (the HF dataset is a static snapshot). |
 
 ---

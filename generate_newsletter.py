@@ -188,8 +188,8 @@ def generate_markdown_newsletter(reference_date=None):
     Parameters
     ----------
     reference_date : date-like, optional
-        Any day in the target week. The edition is dated on that week's
-        Sunday and the header shows the full Mon–Sun range.
+        Edition anchor date. The newsletter covers the prior Mon–Sun;
+        the file is dated on that Sunday.
 
     Returns
     -------

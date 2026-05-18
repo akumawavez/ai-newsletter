@@ -25,7 +25,7 @@ def run_weekly_pipeline(
     *,
     top_n: int = 25,
 ) -> PipelineResult:
-    """Run the full newsletter pipeline for the week containing ``reference_date``."""
+    """Run the full newsletter pipeline for the week before ``reference_date``."""
     week_start, week_end = get_week_window(reference_date)
 
     ingest()

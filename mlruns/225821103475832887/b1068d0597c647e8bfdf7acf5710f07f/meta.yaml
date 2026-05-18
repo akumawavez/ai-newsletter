@@ -1,0 +1,14 @@
+artifact_uri: file:C:/Users/admin/Downloads/Career/Odido/ai-newsletter/mlruns/225821103475832887/b1068d0597c647e8bfdf7acf5710f07f/artifacts
+end_time: 1779099577294
+entry_point_name: ''
+experiment_id: '225821103475832887'
+lifecycle_stage: active
+run_id: b1068d0597c647e8bfdf7acf5710f07f
+run_name: test-eval
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1779099575846
+status: 4
+tags: []
+user_id: admin

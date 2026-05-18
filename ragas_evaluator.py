@@ -184,6 +184,8 @@ def evaluate_newsletter_items(
     items: list[dict[str, Any]],
     *,
     week_label: str = "",
+    edition_date: str = "",
+    parent_run_id: str | None = None,
     max_items: int | None = 10,
     show_progress: bool = True,
 ) -> NewsletterEvalReport:
@@ -246,7 +248,7 @@ def evaluate_newsletter_items(
                 if isinstance(val, float) and val == val:
                     row[key] = round(val, 4)
 
-        return NewsletterEvalReport(
+        report = NewsletterEvalReport(
             week_label=week_label,
             sample_count=len(eval_rows),
             overall=overall,
@@ -254,6 +256,20 @@ def evaluate_newsletter_items(
             retrieval=retrieval,
             rows=detail_rows,
         )
+
+        try:
+            from mlflow_tracker import get_active_run_id, log_ragas_report_to_mlflow
+
+            run_id = parent_run_id or get_active_run_id()
+            log_ragas_report_to_mlflow(
+                report,
+                parent_run_id=run_id,
+                edition_date=edition_date,
+            )
+        except Exception:
+            pass
+
+        return report
 
     except Exception as exc:
         return NewsletterEvalReport(
@@ -292,12 +308,12 @@ def score_bar(score: float | None) -> str:
     return f"{'█' * filled}{'░' * (10 - filled)} {pct}%"
 
 
-def render_eval_panel(report: NewsletterEvalReport) -> None:
-    """Streamlit panel for RAGAS scores (import streamlit in caller)."""
+def render_ragas_detail_panel(report: NewsletterEvalReport) -> None:
+    """Streamlit panel for direct RAGAS score breakdown."""
     import streamlit as st
 
-    st.subheader("RAGAS evaluation")
-    st.caption("LLM-as-judge scores for generation and context quality.")
+    st.markdown("**RAGAS (direct)**")
+    st.caption("LLM-as-judge via the RAGAS library; also logged to MLflow.")
 
     if report.error:
         st.error(report.error)
