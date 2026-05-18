@@ -74,7 +74,9 @@ ai-weeklynewsletter-generator/
 ├── process_analyze.py               # Stages 3–6 + step 9: filter, rank, categorize, persist ids
 ├── llm_summarizer.py                # Stage 7: audience-specific LLM summaries with cache
 ├── generate_newsletter.py           # Stage 8: render Markdown newsletter
-├── app.py                           # Streamlit explorer for the underlying dataset
+├── ragas_evaluator.py               # RAGAS LLM-as-judge evaluation for summaries
+├── app.py                           # Streamlit generator UI (+ RAGAS scores panel)
+├── pages/explore.py                 # Streamlit dataset explorer
 ├── pyproject.toml                   # Project metadata + dependencies
 ├── uv.lock                          # Pinned dependency lockfile (committed)
 ├── data/                            # Generated artifacts; only state files are committed
@@ -110,9 +112,11 @@ uv run python ingest_dataset.py        # download Hugging Face dataset -> data/
 uv run python process_analyze.py       # freshness + dedup + rank + categorize + LLM summarize
 uv run python generate_newsletter.py   # render Markdown -> newsletter_outputs/llmops_newsletter_<date>.md
 
-# 4. Optional: browse the underlying dataset
+# 4. Launch the Streamlit app (generate + RAGAS evaluation panel)
 uv run streamlit run app.py
 ```
+
+**Main Python dependencies** (see `pyproject.toml` / `uv.lock`): `datasets`, `pandas`, `openai`, `streamlit`, **`ragas`**, `langchain-openai` (embeddings for RAGAS answer relevancy).
 
 **Re-running:** the pipeline is idempotent. `data/published_ids.json` tracks items already published, and `data/llm_summaries_cache.json` caches LLM outputs by item id, so subsequent runs are cheap and skip duplicates automatically.
 
@@ -120,8 +124,10 @@ uv run streamlit run app.py
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | — | Required for LLM summaries; without it, falls back to a non-LLM heuristic. |
-| `LLM_MODEL` | `gpt-5.4-nano` | Any chat-completions model. |
+| `OPENAI_API_KEY` | — | Required for LLM summaries and RAGAS evaluation. Without it, summaries fall back to a heuristic. |
+| `LLM_MODEL` | `gpt-5.4-nano` | Chat model for newsletter summarization. |
+| `RAGAS_LLM_MODEL` | same as `LLM_MODEL` | Judge model for RAGAS metrics (faithfulness, context precision, etc.). |
+| `RAGAS_EMBEDDING_MODEL` | `text-embedding-3-small` | Embeddings for RAGAS answer relevancy. |
 | `NEWSLETTER_LOOKBACK_DAYS` | `7` | Drop items older than this before scoring. Auto-widens to 30 / 90 / 365 days when the strict window is empty (the HF dataset is a static snapshot). |
 
 ---
@@ -232,7 +238,7 @@ A scheduled GitHub Actions workflow lives at `.github/workflows/scheduler.yml`.
 - [x] **LLM output caching** to make re-runs free.
 - [x] **Cross-run deduplication** via persisted item ids.
 - [x] **Scheduled GitHub Actions workflow.**
-- [ ] **Quality evaluation** — LLM-as-judge scoring (relevance, clarity, faithfulness) on each generated section.
+- [x] **Quality evaluation** — RAGAS metrics (faithfulness, answer relevancy, context precision/recall, factual correctness) in the Streamlit app.
 - [ ] **Vector-store-backed retrieval** for "items similar to past hits".
 - [ ] **Slack / Teams / email delivery adapter.**
 - [ ] **Configurable section taxonomy** via YAML.

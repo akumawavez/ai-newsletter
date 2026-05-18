@@ -26,6 +26,27 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+st.sidebar.markdown("### RAGAS evaluation")
+run_ragas = st.sidebar.checkbox(
+    "Run RAGAS evaluation after generate",
+    value=True,
+    help="Scores faithfulness, relevancy, and context metrics via LLM-as-judge.",
+)
+max_eval_items = st.sidebar.slider(
+    "Max items to evaluate",
+    min_value=3,
+    max_value=25,
+    value=10,
+    help="Top-ranked items by trending score (each has tech + nontech rows).",
+)
+
+st.sidebar.markdown("### Tips")
+st.sidebar.markdown(
+    "- Set `OPENAI_API_KEY` in `.env` for LLM summaries and RAGAS evals.\n"
+    "- Use **Explore dataset** in the sidebar to browse ingested items.\n"
+    "- Published item ids are tracked in `data/published_ids.json`."
+)
+
 
 def capture_stdout(func, *args, **kwargs):
     buffer = io.StringIO()
@@ -190,24 +211,3 @@ if "last_output_path" in st.session_state:
                 )
     else:
         st.warning(f"Expected output file not found: {output_path}")
-
-st.sidebar.markdown("### RAGAS evaluation")
-run_ragas = st.sidebar.checkbox(
-    "Run RAGAS evaluation after generate",
-    value=True,
-    help="Scores faithfulness, relevancy, and context metrics via LLM-as-judge.",
-)
-max_eval_items = st.sidebar.slider(
-    "Max items to evaluate",
-    min_value=3,
-    max_value=25,
-    value=10,
-    help="Top-ranked items by trending score (each has tech + nontech rows).",
-)
-
-st.sidebar.markdown("### Tips")
-st.sidebar.markdown(
-    "- Set `OPENAI_API_KEY` in `.env` for LLM summaries and RAGAS evals.\n"
-    "- Use **Explore dataset** in the sidebar to browse ingested items.\n"
-    "- Published item ids are tracked in `data/published_ids.json`."
-)
