@@ -288,8 +288,10 @@ def flush_monitoring_to_mlflow():
         ) * 60.0
 
     for stage in snap.stages:
-        key = f"stage_{_sanitize_metric_name(stage.name)}_sec"
-        mlflow.log_metric(key, stage.duration_sec)
+        name = _sanitize_metric_name(stage.name)
+        duration = round(stage.duration_sec, 4)
+        mlflow.log_metric(f"stage_{name}_sec", duration)
+        mlflow.log_metric(f"stage_{name}_ms", round(duration * 1000, 1))
 
     mlflow.log_metric("pipeline_total_sec", total_stage_sec)
     mlflow.log_metric("llm_calls", snap.llm.calls)

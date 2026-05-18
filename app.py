@@ -48,6 +48,11 @@ max_eval_items = st.sidebar.slider(
     value=10,
     help="Top-ranked items (each has tech + nontech rows).",
 )
+skip_dedup = st.sidebar.checkbox(
+    "Include previously published items",
+    value=False,
+    help="Bypass dedup state so more stories can appear when testing.",
+)
 
 st.sidebar.markdown("### Tips")
 st.sidebar.markdown(
@@ -126,30 +131,51 @@ if generate:
                     with st.expander("Ingestion log"):
                         st.code(ingest_log)
 
-                log_step("2/3 — Processing, ranking, and summarizing items…")
+                log_step("2/4 — Filtering, ranking, and categorizing…")
                 from process_analyze import process_and_analyze
 
-                with track_stage("process_analyze"):
-                    process_result, process_log = capture_stdout(
+                with track_stage("process_rank_filter"):
+                    ranked, process_log = capture_stdout(
                         process_and_analyze,
                         reference_date=selected_date,
+                        run_summarization=False,
+                        skip_dedup=skip_dedup,
                     )
                 if process_log.strip():
-                    with st.expander("Processing log"):
+                    with st.expander("Ranking log"):
                         st.code(process_log)
 
-                if process_result is None:
+                if ranked is None:
                     status.update(label="No items for this week", state="error")
                     st.error(
-                        "No fresh, non-duplicate items matched this week. "
-                        "Try another date or clear `data/published_ids.json` if testing."
+                        "No items matched this week. Try another edition date, "
+                        "enable **Include previously published items**, or "
+                        "clear `data/published_ids.json` when testing."
                     )
                     st.stop()
 
-                log_step("3/3 — Rendering Markdown newsletter…")
+                log_step("3/4 — LLM summarization (tech + nontech per item)…")
+                from process_analyze import (
+                    persist_processed_items,
+                    summarize_processed_items,
+                )
+
+                with track_stage("llm_summarize"):
+                    process_result, sum_log = capture_stdout(
+                        summarize_processed_items,
+                        ranked,
+                    )
+                if sum_log.strip():
+                    with st.expander("Summarization log"):
+                        st.code(sum_log)
+
+                with track_stage("persist_processed"):
+                    capture_stdout(persist_processed_items, process_result)
+
+                log_step("4/4 — Rendering Markdown newsletter…")
                 from generate_newsletter import generate_markdown_newsletter
 
-                with track_stage("generate_newsletter"):
+                with track_stage("render_markdown"):
                     output_path, gen_log = capture_stdout(
                         generate_markdown_newsletter,
                         reference_date=selected_date,

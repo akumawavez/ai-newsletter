@@ -593,10 +593,50 @@ def load_records():
     return df
 
 
+def persist_processed_items(processed):
+    """Write ranked items to SQLite and JSONL."""
+    with sqlite3.connect(DB_PATH) as conn:
+        processed.to_sql(
+            "processed_newsletter_items",
+            conn,
+            if_exists="replace",
+            index=False,
+        )
+
+    with open(PROCESSED_JSONL_PATH, "w", encoding="utf-8") as f:
+        for _, row in processed.iterrows():
+            item = {
+                "item_id": clean_text(row.get("item_id", "")),
+                "title": clean_text(row.get("title", "")),
+                "company": clean_text(row.get("company", "")),
+                "industry": clean_text(row.get("industry", "")),
+                "year": clean_text(row.get("year", "")),
+                "source_url": clean_text(row.get("source_url", "")),
+                "section": clean_text(row.get("section", "")),
+                "trending_score": int(row.get("trending_score", 0)),
+                "newsletter_summary": clean_text(row.get("newsletter_summary", "")),
+                "tech_summary": clean_text(row.get("tech_summary", "")),
+                "nontech_summary": clean_text(row.get("nontech_summary", "")),
+                "tools_tags": clean_text(row.get("tools_tags", "")),
+                "techniques_tags": clean_text(row.get("techniques_tags", "")),
+                "application_tags": clean_text(row.get("application_tags", "")),
+            }
+            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+
+def summarize_processed_items(processed):
+    """Run LLM audience summarization on an already-ranked dataframe."""
+    print(f"Generating LLM summaries for {len(processed)} items...")
+    return add_audience_summaries(processed)
+
+
 def process_and_analyze(
     top_n=25,
     lookback_days=DEFAULT_LOOKBACK_DAYS,
     reference_date=None,
+    *,
+    run_summarization: bool = True,
+    skip_dedup: bool = False,
 ):
     """Run the weekly pre-processing pipeline.
 
@@ -621,7 +661,8 @@ def process_and_analyze(
 
     # Step 4: Deduplication + Freshness Filtering
     df = apply_freshness_filter(df, week_start, week_end, lookback_days)
-    df = apply_dedup_filter(df, load_published_ids())
+    published = set() if skip_dedup else load_published_ids()
+    df = apply_dedup_filter(df, published)
 
     if df.empty:
         print("No fresh, non-duplicate items for this run; nothing to write.")
@@ -652,38 +693,10 @@ def process_and_analyze(
 
     processed = df.head(top_n).copy()
 
-    # Step 7: LLM Summarization (audience-specific, anti-hallucination)
-    print(f"Generating LLM summaries for top {len(processed)} items...")
-    processed = add_audience_summaries(processed)
+    if run_summarization:
+        processed = summarize_processed_items(processed)
 
-    with sqlite3.connect(DB_PATH) as conn:
-        processed.to_sql(
-            "processed_newsletter_items",
-            conn,
-            if_exists="replace",
-            index=False,
-        )
-
-    with open(PROCESSED_JSONL_PATH, "w", encoding="utf-8") as f:
-        for _, row in processed.iterrows():
-            item = {
-                "item_id": clean_text(row.get("item_id", "")),
-                "title": clean_text(row.get("title", "")),
-                "company": clean_text(row.get("company", "")),
-                "industry": clean_text(row.get("industry", "")),
-                "year": clean_text(row.get("year", "")),
-                "source_url": clean_text(row.get("source_url", "")),
-                "section": clean_text(row.get("section", "")),
-                "trending_score": int(row.get("trending_score", 0)),
-                "newsletter_summary": clean_text(row.get("newsletter_summary", "")),
-                "tech_summary": clean_text(row.get("tech_summary", "")),
-                "nontech_summary": clean_text(row.get("nontech_summary", "")),
-                "tools_tags": clean_text(row.get("tools_tags", "")),
-                "techniques_tags": clean_text(row.get("techniques_tags", "")),
-                "application_tags": clean_text(row.get("application_tags", "")),
-            }
-
-            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+    persist_processed_items(processed)
 
     print("\nProcessing complete.")
     print(f"Processed table: processed_newsletter_items")

@@ -114,8 +114,11 @@ uv run python ingest_dataset.py        # download Hugging Face dataset -> data/
 uv run python process_analyze.py       # freshness + dedup + rank + categorize + LLM summarize
 uv run python generate_newsletter.py   # render Markdown -> newsletter_outputs/llmops_newsletter_<date>.md
 
-# 4. Launch the Streamlit app (generate + RAGAS evaluation panel)
+# 4. Launch the Streamlit app (generate, evaluate, monitor)
 uv run streamlit run app.py
+
+# 5. Optional: open the MLflow UI for run history
+uv run mlflow ui --backend-store-uri sqlite:///data/mlflow.db
 ```
 
 **Main Python dependencies** (see `pyproject.toml` / `uv.lock`): `datasets`, `pandas`, `openai`, `streamlit`, **`ragas`**, **`mlflow`**, `langchain-openai` (embeddings for RAGAS answer relevancy).
@@ -211,6 +214,117 @@ Within each audience, items are sub-grouped by the topic categories above for re
 
 ---
 
+## Streamlit app (generate on demand)
+
+The app (`app.py`) replaces the need for a fixed schedule when you want a newsletter for a specific week.
+
+### Edition date and week window
+
+- Pick an **edition date** (today at latest; no future dates).
+- The pipeline always covers the **previous calendar week** (Monday–Sunday) before the week that contains your edition date.
+- Example: edition date **19 May** → newsletter week **11 May (Mon) – 17 May (Sun)**.
+
+### Sidebar options
+
+| Control | What it does |
+| --- | --- |
+| **Include previously published items** | Skips deduplication so you can re-test with more than a handful of stories. Turn off for production runs. |
+| **Run evaluation after generate** | Runs RAGAS scoring and logs results to MLflow. |
+| **Max items to evaluate** | Caps how many top items are scored (each item = 2 rows: tech + nontech). |
+
+### Right-hand panels
+
+After generation, the layout splits:
+
+1. **Newsletter preview** (left) — rendered Markdown.
+2. **Evaluation** tab — quality scores (see below).
+3. **Monitoring** tab — speed, tokens, and stage timings (see below).
+
+---
+
+## Monitoring (MLflow) — what the numbers mean
+
+Every generate click opens an MLflow **pipeline run** that records how long each step took and how much the LLM was used. Think of it as a flight recorder for one newsletter build.
+
+### Headline metrics (plain English)
+
+| Metric | Meaning |
+| --- | --- |
+| **Total tokens** | How much text was sent to and received from the LLM API. High prompt tokens usually mean long source articles; completions are the actual blurbs. |
+| **Avg LLM latency** | Average seconds per OpenAI call. One call per article (both audiences in one JSON response). |
+| **Throughput** | Items finished per minute of total pipeline time. |
+| **LLM calls** | Should match **items in newsletter** when nothing is cached. Not “one call per sentence”. |
+| **Cache hits** | Summaries reused from disk (`data/llm_summaries_cache.json`) — no API charge, no latency. |
+| **Items in newsletter** | Stories that made it into the final Markdown file. |
+
+### Stage latency (four steps)
+
+| Stage | What happens |
+| --- | --- |
+| **ingest** | Download / refresh the Hugging Face dataset into SQLite. |
+| **process_rank_filter** | Filter by week, deduplicate, score trending relevance, assign sections. No LLM here. |
+| **llm_summarize** | OpenAI writes `tech_summary` and `nontech_summary` per item (this is where most tokens go). |
+| **persist_processed** | Save ranked rows to SQLite and JSONL. Usually sub-second. |
+| **render_markdown** | Read SQLite and write `newsletter_outputs/llmops_newsletter_<date>.md`. Usually sub-second (shown in ms, not 0.0s). |
+
+If **render_markdown** or **persist_processed** look like “0.0s”, check the millisecond value — those steps are fast by design, not missing instrumentation.
+
+### Viewing history
+
+```bash
+uv run mlflow ui --backend-store-uri sqlite:///data/mlflow.db
+```
+
+Runs are stored under the experiment **`llmops-newsletter`**, tagged with `edition_date` and `run_type` (`newsletter_pipeline` vs `newsletter_evaluation`).
+
+---
+
+## Evaluation (RAGAS + MLflow) — what the scores mean
+
+After generation, the **Evaluation** tab scores how good the LLM summaries are. We use [RAGAS](https://docs.ragas.io/) (Retrieval Augmented Generation Assessment): an open framework that uses LLM-as-judge metrics. Scores are logged to MLflow so you can compare weeks.
+
+### Two groups of metrics
+
+**Retrieval / context** (is the pipeline feeding the model the right material?)
+
+| Metric | Plain English | Good score |
+| --- | --- | --- |
+| **Context precision** | The source text shown to the model is relevant to the article. | Near 1.0 |
+| **Context recall** | The source text contains enough information to write the summary. | Near 1.0 |
+
+**Generation** (is the model writing good summaries from that material?)
+
+| Metric | Plain English | Good score |
+| --- | --- | --- |
+| **Faithfulness** | Claims in the summary are supported by the source (low hallucination). | > 0.7 |
+| **Answer relevancy** | The summary answers the specific “write a blurb about *this* article” task. | > 0.7 |
+| **Factual correctness** | Alignment with the dataset’s reference summary. | > 0.7 |
+
+### How to read a mixed profile
+
+A common pattern:
+
+- **High context precision / recall** — the right source material is present (retrieval side is fine).
+- **Low faithfulness or relevancy** — the LLM summary is drifting, too generic, or paraphrasing in a way the judge penalizes.
+
+That usually points to **prompting and summarization**, not ingestion.
+
+### What we did to improve scores
+
+1. **Item-specific evaluation questions** — RAGAS now asks about the actual article title/company, not a generic “write a blurb” line.
+2. **Stricter summarization prompt** — temperature `0`, explicit “reuse exact names from source”, shorter blurbs when source is thin.
+3. **Shared context block** — the same trimmed source text is used for LLM generation and RAGAS evaluation.
+4. **Shorter reference text** for factual-correctness so judges are not confused by huge gold summaries.
+
+Re-run evaluation after changing prompts or clearing `data/llm_summaries_cache.json` (cached summaries were generated with older prompts).
+
+### MLflow vs RAGAS (direct) in the UI
+
+- **MLflow (latest run)** — aggregate metrics stored on the evaluation child run (for trends and dashboards).
+- **RAGAS (direct run)** — the same scores with per-item breakdown in the UI.
+
+---
+
 ## Automation
 
 A scheduled GitHub Actions workflow lives at `.github/workflows/scheduler.yml`.
@@ -241,7 +355,8 @@ A scheduled GitHub Actions workflow lives at `.github/workflows/scheduler.yml`.
 - [x] **LLM output caching** to make re-runs free.
 - [x] **Cross-run deduplication** via persisted item ids.
 - [x] **Scheduled GitHub Actions workflow.**
-- [x] **Quality evaluation** — RAGAS metrics (faithfulness, answer relevancy, context precision/recall, factual correctness) in the Streamlit app.
+- [x] **Quality evaluation** — RAGAS + MLflow metrics in the Streamlit app (Evaluation tab).
+- [x] **Pipeline monitoring** — MLflow-tracked latency, tokens, throughput (Monitoring tab).
 - [ ] **Vector-store-backed retrieval** for "items similar to past hits".
 - [ ] **Slack / Teams / email delivery adapter.**
 - [ ] **Configurable section taxonomy** via YAML.

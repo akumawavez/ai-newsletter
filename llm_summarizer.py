@@ -46,37 +46,57 @@ SOURCE_FIELDS = (
 
 SYSTEM_PROMPT = (
     "You are a careful editor for an internal AI/LLM newsletter. "
-    "You write short, factual blurbs strictly from the source material "
-    "the user provides. Rules you must follow:\n"
-    "1. Use ONLY facts present in the source. Never add details, examples, "
-    "names, numbers, dates, or claims that are not in the source.\n"
-    "2. If a fact is unclear or missing, omit it. Never speculate.\n"
-    "3. Do not invent URLs, citations, or markdown links.\n"
-    "4. Each blurb must be between 35 and 60 words.\n"
-    "5. Output ONLY a JSON object with exactly two keys: \"tech\" and "
-    "\"nontech\".\n\n"
-    "\"tech\": for an engineer reader. May reference tools, techniques, "
-    "and architectures named in the source. Concrete and specific.\n"
-    "\"nontech\": for a business reader. Plain language, focused on the "
-    "use case, the company/industry, and the outcome. Avoid jargon."
+    "You write two short blurbs about ONE case study using ONLY the "
+    "source material provided.\n\n"
+    "Rules:\n"
+    "1. Every claim must appear explicitly in the source (title, tags, "
+    "or summaries). Do not use outside knowledge.\n"
+    "2. Reuse exact names for companies, tools, and techniques when the "
+    "source names them.\n"
+    "3. Do not add numbers, dates, metrics, or outcomes unless the source "
+    "states them.\n"
+    "4. If the source is thin, write a shorter blurb — never invent detail.\n"
+    "5. No URLs or markdown links.\n"
+    "6. Each blurb: 35–60 words.\n"
+    "7. Output ONLY JSON: {\"tech\": \"...\", \"nontech\": \"...\"}\n\n"
+    "\"tech\": engineer reader; mention tools/techniques from the source.\n"
+    "\"nontech\": business reader; company, use case, and outcome in plain "
+    "language."
 )
 
 
 URL_PATTERN = re.compile(r"https?://\S+")
 
 
-def _build_user_prompt(item):
-    """Render the row's allowed fields as a single prompt block."""
-    lines = ["Source material:", ""]
-
+def build_source_context(item) -> str:
+    """Render allowed source fields as one context block (for LLM + evaluation)."""
+    lines = []
     for field in SOURCE_FIELDS:
         value = item.get(field, "")
         if value is None or str(value).strip() == "":
             continue
-        lines.append(f"{field}: {value}")
+        text = str(value).strip()
+        if field == "full_summary" and len(text) > 1200:
+            text = text[:1200].rstrip() + "..."
+        lines.append(f"{field}: {text}")
+    return "\n".join(lines)
 
-    lines.append("")
-    lines.append("Write the JSON now.")
+
+def _build_user_prompt(item):
+    """Render the row's allowed fields as a single prompt block."""
+    title = (item.get("title") or "Untitled").strip()
+    company = (item.get("company") or "Unknown company").strip()
+
+    lines = [
+        f"Case study: {title}",
+        f"Company: {company}",
+        "",
+        "Source material:",
+        "",
+        build_source_context(item),
+        "",
+        "Write the JSON now.",
+    ]
     return "\n".join(lines)
 
 
@@ -138,7 +158,7 @@ def _call_model(client, item, model):
     start = time.perf_counter()
     response = client.chat.completions.create(
         model=model,
-        temperature=0.2,
+        temperature=0,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},

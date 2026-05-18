@@ -29,7 +29,14 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from llm_summarizer import SOURCE_FIELDS
+from llm_summarizer import build_source_context
+
+
+def _truncate_reference(text: str, max_words: int = 120) -> str:
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]).rstrip(".,;:") + "..."
 
 
 EVAL_DATA_DIR = Path("data")
@@ -38,14 +45,19 @@ EVAL_CACHE_DIR = EVAL_DATA_DIR / "ragas_evaluations"
 GENERATION_METRICS = ("faithfulness", "answer_relevancy", "factual_correctness(mode=f1)")
 RETRIEVAL_METRICS = ("context_precision", "context_recall")
 
-TECH_INSTRUCTION = (
-    "Write a concise technical newsletter blurb (35–60 words) for an engineer "
-    "audience, using only the provided source material."
-)
-NONTECH_INSTRUCTION = (
-    "Write a concise non-technical newsletter blurb (35–60 words) for a "
-    "business audience, using only the provided source material."
-)
+def build_eval_user_input(item: dict[str, Any], audience: str) -> str:
+    """Item-specific instruction so RAGAS answer-relevancy matches the real task."""
+    title = _clean(item.get("title")) or "this case study"
+    company = _clean(item.get("company")) or "the company"
+    if audience == "tech":
+        return (
+            f"Write a 35–60 word technical newsletter blurb about '{title}' "
+            f"by {company} for engineers, using only the source material."
+        )
+    return (
+        f"Write a 35–60 word non-technical newsletter blurb about '{title}' "
+        f"by {company} for business readers, using only the source material."
+    )
 
 
 @dataclass
@@ -70,16 +82,6 @@ def _clean(value: Any) -> str:
     return str(value).strip()
 
 
-def build_source_context(item: dict[str, Any]) -> str:
-    """Render allowed source fields as the retrieved context block."""
-    lines = []
-    for name in SOURCE_FIELDS:
-        value = _clean(item.get(name, ""))
-        if value:
-            lines.append(f"{name}: {value}")
-    return "\n".join(lines)
-
-
 def build_eval_rows(
     items: list[dict[str, Any]],
     *,
@@ -90,22 +92,33 @@ def build_eval_rows(
     subset = items[:max_items] if max_items else items
 
     for item in subset:
-        context = build_source_context(item)
+        item_dict = {
+            field: item.get(field, "")
+            for field in (
+                "title", "company", "industry", "year",
+                "application_tags", "tools_tags", "techniques_tags",
+                "short_summary", "full_summary",
+            )
+        }
+        context = build_source_context(item_dict)
         if not context:
             continue
 
         reference = _clean(item.get("short_summary")) or _clean(
             item.get("full_summary")
         )
+        if len(reference.split()) > 120:
+            reference = _truncate_reference(reference)
         title = _clean(item.get("title")) or "Untitled"
         item_id = _clean(item.get("item_id"))
 
         audience_specs = (
-            ("tech", TECH_INSTRUCTION, _clean(item.get("tech_summary"))),
-            ("nontech", NONTECH_INSTRUCTION, _clean(item.get("nontech_summary"))),
+            ("tech", _clean(item.get("tech_summary"))),
+            ("nontech", _clean(item.get("nontech_summary"))),
         )
 
-        for audience, instruction, response in audience_specs:
+        for audience, response in audience_specs:
+            instruction = build_eval_user_input(item_dict, audience)
             if not response:
                 response = _clean(item.get("newsletter_summary"))
             if not response:
@@ -312,8 +325,12 @@ def render_ragas_detail_panel(report: NewsletterEvalReport) -> None:
     """Streamlit panel for direct RAGAS score breakdown."""
     import streamlit as st
 
-    st.markdown("**RAGAS (direct)**")
-    st.caption("LLM-as-judge via the RAGAS library; also logged to MLflow.")
+    st.markdown("**RAGAS (direct run)**")
+    st.caption(
+        "Same library scores logged above. Low **faithfulness** or **relevancy** "
+        "usually means the prompt or summary should be tightened — not that "
+        "retrieval failed."
+    )
 
     if report.error:
         st.error(report.error)
