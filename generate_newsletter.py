@@ -19,10 +19,9 @@ Run with::
 
 import sqlite3
 from collections import defaultdict
-from datetime import date
 from pathlib import Path
 
-from process_analyze import save_published_ids
+from process_analyze import get_week_window, save_published_ids
 
 
 DB_PATH = Path("data/llmops_database.db")
@@ -183,8 +182,20 @@ def render_audience_section(audience, grouped_items):
     return lines
 
 
-def generate_markdown_newsletter():
-    """Produce the weekly newsletter Markdown file."""
+def generate_markdown_newsletter(reference_date=None):
+    """Produce the weekly newsletter Markdown file.
+
+    Parameters
+    ----------
+    reference_date : date-like, optional
+        Any day in the target week. The edition is dated on that week's
+        Sunday and the header shows the full Mon–Sun range.
+
+    Returns
+    -------
+    pathlib.Path
+        Path to the written Markdown file.
+    """
     if not DB_PATH.exists():
         raise FileNotFoundError(
             "Database not found. Run `python ingest_dataset.py` and "
@@ -195,10 +206,13 @@ def generate_markdown_newsletter():
 
     items = fetch_processed_items()
     grouped = group_by_category(items)
-    today = date.today().isoformat()
+    week_start, week_end = get_week_window(reference_date)
+    edition_date = week_end.isoformat()
 
     lines = [
-        f"# Weekly LLMOps Newsletter — {today}",
+        f"# Weekly LLMOps Newsletter — {edition_date}",
+        "",
+        f"*Week of {week_start.isoformat()} (Mon) – {week_end.isoformat()} (Sun)*",
         "",
         "A curated, audience-aware roundup of LLMOps case studies, "
         "production patterns, tools, and use cases. The same items appear "
@@ -217,7 +231,7 @@ def generate_markdown_newsletter():
         "",
     ])
 
-    output_path = OUTPUT_DIR / f"llmops_newsletter_{today}.md"
+    output_path = OUTPUT_DIR / f"llmops_newsletter_{edition_date}.md"
     output_path.write_text("\n".join(lines), encoding="utf-8")
 
     print(f"Newsletter generated: {output_path}")
@@ -226,6 +240,8 @@ def generate_markdown_newsletter():
     # Only after the newsletter is safely on disk; failure here logs but
     # does not raise (the newsletter is already published).
     save_published_ids(item.get("item_id", "") for item in items)
+
+    return output_path
 
 
 if __name__ == "__main__":

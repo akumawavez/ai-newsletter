@@ -61,6 +61,7 @@ SYSTEM_PROMPT = (
     "use case, the company/industry, and the outcome. Avoid jargon."
 )
 
+
 URL_PATTERN = re.compile(r"https?://\S+")
 
 
@@ -108,7 +109,8 @@ def _heuristic_fallback(item):
     content. The same string is returned for both audiences; the renderer
     can still display it.
     """
-    base = (item.get("short_summary") or item.get("full_summary") or "").strip()
+    base = (item.get("short_summary") or item.get(
+        "full_summary") or "").strip()
     if not base:
         base = item.get("title", "").strip()
     return {"tech": base, "nontech": base}

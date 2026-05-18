@@ -120,16 +120,31 @@ TRENDING_KEYWORDS = [
 ]
 
 
-def get_current_week_window():
-    """
-    Returns Monday 00:00 to Sunday 23:59 for the current local week.
-    Uses system date.
-    """
-    today = datetime.now().date()
-    monday = today - timedelta(days=today.weekday())
-    sunday = monday + timedelta(days=6)
+def _coerce_date(value):
+    """Normalize ``value`` to a :class:`datetime.date`."""
+    if value is None:
+        return datetime.now().date()
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, str):
+        return datetime.fromisoformat(value).date()
+    return value
 
+
+def get_week_window(reference_date=None):
+    """Return Monday and Sunday for the week containing ``reference_date``.
+
+  If ``reference_date`` is omitted, uses today's local date.
+    """
+    day = _coerce_date(reference_date)
+    monday = day - timedelta(days=day.weekday())
+    sunday = monday + timedelta(days=6)
     return monday, sunday
+
+
+def get_current_week_window():
+    """Return Monday–Sunday for the current local week."""
+    return get_week_window()
 
 
 def clean_text(value):
@@ -516,7 +531,11 @@ def load_records():
     return df
 
 
-def process_and_analyze(top_n=25, lookback_days=DEFAULT_LOOKBACK_DAYS):
+def process_and_analyze(
+    top_n=25,
+    lookback_days=DEFAULT_LOOKBACK_DAYS,
+    reference_date=None,
+):
     """Run the weekly pre-processing pipeline.
 
     Parameters
@@ -526,11 +545,13 @@ def process_and_analyze(top_n=25, lookback_days=DEFAULT_LOOKBACK_DAYS):
     lookback_days : int
         Freshness window in days. Items whose ``created_at`` is older
         than this are dropped before scoring.
+    reference_date : date-like, optional
+        Any day in the target week (Mon–Sun). Defaults to today.
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     df = load_records()
-    week_start, week_end = get_current_week_window()
+    week_start, week_end = get_week_window(reference_date)
 
     print(f"Processing records: {len(df)}")
     print(f"Current week window: {week_start} to {week_end}")
@@ -541,7 +562,7 @@ def process_and_analyze(top_n=25, lookback_days=DEFAULT_LOOKBACK_DAYS):
 
     if df.empty:
         print("No fresh, non-duplicate items for this run; nothing to write.")
-        return
+        return None
 
     df["section"] = df.apply(categorize_item, axis=1)
 
@@ -617,6 +638,8 @@ def process_and_analyze(top_n=25, lookback_days=DEFAULT_LOOKBACK_DAYS):
         col for col in preview_cols if col in processed.columns]
 
     print(processed[existing_preview_cols].head(10).to_string(index=False))
+
+    return processed
 
 
 if __name__ == "__main__":

@@ -8,284 +8,284 @@ Engineering-flavoured roundup: tools, techniques, architectures, and production 
 
 ### Research Highlights
 
-#### Building Production-Ready AI Agents Through Harness Engineering and Continual Learning
+#### Training Agentic Models with Reinforcement Learning for Production Deployment
 
-**Company:** langchain  
+**Company:** kimi_/_cursor_/_chroma  
 **Industry:** Tech
 
-Langchain frames production AI agents as “model plus harness,” where the harness includes context engineering, prompting (system prompts, tool descriptions, skill front matter, sub-agent specs), verification hooks, and orchestration logic. It emphasizes continual learning via trace mining, context injection, and fine-tuning open models, plus evaluation flywheels using Langsmith and custom suites.
+Three production LLM systems—Kimi K2.5, Cursor Composer 2, and Chroma Context-1—use reinforcement learning to train agentic models. Kimi K2.5 adds Agent Swarm with PARL and critical steps, freezing sub-agents and using outcome-based rewards plus GRM-style generative reward models. Cursor Composer 2 trains real-time RL inside a production harness with asynchronous Ray/PyTorch rollouts, Firecracker VMs, and a ~five-hour deploy loop. Chroma Context-1 trains a 20B self-editing search agent with extraction-based verification, a token-budgeted tool harness, and CISPO-style on-policy optimization with recall-focused rewards and pruning penalties.
 
-[Read source](https://www.youtube.com/watch?v=NovNcsKX8AU)
-
----
-
-#### Large-Scale OCR Processing of Academic Papers Using AI Coding Agents and Serverless GPU Infrastructure
-
-**Company:** huggingface  
-**Industry:** Tech
-
-Hugging Face used OpenAI’s Codex coding agent to orchestrate an OCR-to-Markdown pipeline for “chat with paper.” They selected Chandra-OCR 2 via Hugging Face leaderboards (OlmOCRBench) and deployed it on Hugging Face Jobs serverless GPUs using vLLM. Processing ran across 16 parallel L40S instances, writing outputs to Hugging Face Buckets via hf-mount, then merging results for Paper Pages integration.
-
-[Read source](https://huggingface.co/blog/nielsr/ocr-papers-jobs)
-
----
-
-#### Using AI Agents for Codebase Refactoring and Monolith Decomposition
-
-**Company:** 1password  
-**Industry:** Tech
-
-1Password used AI agents to refactor and decompose a multi-million-line Go monolith (B5) for its Unified Access system. The toolchain combined Go SSA analysis, SQL parsing, and DataDog runtime coupling data via an MCP integration to produce domain ownership maps, coupling graphs, and prioritized extraction order. Agents automated a 3,000+ call site migration in hours using deterministic manifests, templates, and a playbook with failure modes and human escalation. They used git worktrees for parallel multi-agent execution.
-
-[Read source](https://1password.com/blog/what-we-learned-using-ai-agents-to-refactor-a-monolith)
+[Read source](https://www.philschmid.de/kimi-composer-context)
 
 ---
 
 ### Industry News
 
-#### AI-Generated Trip Reports for Outdoor Recreation Guides
+#### Building an AI-Powered Slack Agent with MCP Standardization
 
-**Company:** guidesly  
-**Industry:** Other
+**Company:** duolingo  
+**Industry:** Education
 
-Guidesly’s Jack AI is an AWS serverless, event-driven pipeline that turns uploaded trip media (photos, videos, metadata) into marketing-ready assets. It uses API Gateway to trigger AWS Step Functions, Lambda for stages (EXIF extraction, computer vision inference, media optimization, content generation, publishing), S3 for artifacts, RDS (PostgreSQL) for structured data, and Amazon Bedrock foundation models for generation with contextual prompting and constraints.
+Duolingo built an AI-powered Slack agent to abstract Model Context Protocol (MCP) server setup. After standardizing MCP infrastructure, the Slack app uses the Claude Agent SDK to interact with MCP servers and the Slack Bot SDK for messaging. It supports read-only tools from 15+ MCP servers and can run AWS CLI and BigQuery commands, with human-in-the-loop approvals for write operations via Temporal workflows.
 
-[Read source](https://aws.amazon.com/blogs/machine-learning/how-guidesly-built-ai-generated-trip-reports-for-outdoor-guides-on-aws/)
+[Read source](https://www.youtube.com/watch?v=5sb9iA2v78g)
 
 ---
 
-#### Building and Operating Production AI Agents at Scale with Vercel's Agent Orchestration Platform
+#### Open-Source Agent Orchestration Platform for Multi-Agent Business Automation
 
-**Company:** vercel  
+**Company:** paperclip  
 **Industry:** Tech
 
-Vercel built and operates production AI agents using its agent orchestration platform. The d0 internal analytics agent is a text-to-SQL engine that uses Vercel Sandboxes for isolated execution, Fluid Compute for dynamic scaling, AI Gateway for multi-model routing, and Workflows for durable orchestration with retries and state recovery. Built-in observability traces prompts, model responses, and decision paths. Vercel’s AI SDK provides streaming responses, tool use, and structured outputs, including a Chatbot primitive for Slack delivery.
+Paperclip is an open-source agent orchestration platform for production multi-agent business automation, using a centralized control plane with organizational hierarchies, task management, quality assurance workflows, and vendor-neutral agent integration. It supports multiple model providers (including Claude and GPT models via Codex, plus Gemini, Pi, Hermes) through OpenRouter, with agent memory/context inside the platform. It includes reviewer/approver QA roles, a skills system for installable capabilities (e.g., Remotion, Greptile, browser automation), first-class plans for human review/iteration, and cost tracking with budgets and model tiering. The creator demonstrates GitHub pull requests/code reviews and an experimental workspace, while noting early-stage gaps like multi-user support and cloud/sandboxing.
 
-[Read source](https://vercel.com/blog/anyone-can-build-agents-but-it-takes-a-platform-to-run-them)
-
----
-
-#### AI-Powered Incident Investigation for Payment Infrastructure
-
-**Company:** razorpay  
-**Industry:** Finance
-
-Razorpay built the Razorpay Oncall Agent, a multi-agent LLM system using LangGraph and RAG-based context retrieval. A Supervisor Agent creates an investigation strategy by querying two RAG systems (architecture/dependencies and alert-specific runbooks), then dispatches parallel specialist agents for Kubernetes pod health, Coralogix logs, PromQL performance metrics, and AWS infrastructure checks. Findings are stored as structured evidence with confidence scores, then correlated into an Incident Evidence Timeline to score hypotheses and select a root cause. It integrates with Slack and runs in shadow mode.
-
-[Read source](https://engineering.razorpay.com/project-viveka-from-30-minute-investigations-to-90-second-ai-analysis-e49ec9db2638)
+[Read source](https://www.youtube.com/watch?v=h403btjldDQ)
 
 ---
 
-#### Building an Autonomous AI SRE Agent for Production Incident Investigation
+#### Platform Engineering for AI: Scaling Multi-Agentic Systems with MCP
+
+**Company:** linkedin  
+**Industry:** Tech
+
+LinkedIn built an agentic platform that treats AI agents as a first-class execution model like microservices infrastructure. It separates “foreground agents” (IDE-integrated tools) from “background agents” (autonomous task executors) running in secure sandboxes. Agents use MCP for standardized tool calling, propose changes via pull requests, and operate with audited, replayable traces, evaluations, and observability.
+
+[Read source](https://www.infoq.com/podcasts/platform-engineering-scaling-agents/)
+
+---
+
+#### Grassroots AI Skills Marketplace: Scaling AI Capabilities Through Bottom-Up Engineering
+
+**Company:** uber  
+**Industry:** Tech
+
+Uber scaled AI capabilities by building an internal “Agentic Marketplace” for Claude AI skills, starting with two skills (CI log triage/repair and a basic code reviewer) and growing to 200+ curated skills in the main hub plus 300+ experimental tools in team repositories. It used two-tier governance: a “Golden Marketplace” with manual code review, CI/CD checks, and LLM-as-a-Judge evaluation, and a sandbox tier shared via URLs with no governance. Production skills required deterministic outputs (what was attempted, succeeded/failed, and exact diffs), with human-in-the-loop final review. The approach emphasized prompt engineering, agent-based/multi-agent systems, evals, error handling, and reliability/scalability via CI/CD and orchestration.
+
+[Read source](https://medium.com/activated-thinker/how-uber-secretly-scaled-ai-from-2-to-500-skills-in-5-months-without-a-strategy-25ff894c0f9c)
+
+---
+
+#### Multi-Agent Research and Intelligence Platform for Pharmaceutical Data Integration
+
+**Company:** madrigal  
+**Industry:** Healthcare
+
+Madrigal built an enterprise multi-agent research platform for pharmaceutical data integration using LangChain’s DeepAgents framework and LangSmith. Specialized agents for search, analysis, and synthesis run in parallel under an orchestrator, with data normalized into a consistent tool interface and stored in a secure data warehouse. A virtual filesystem provides shared collaborative memory. LangSmith tracing and trace-level evals support debugging and continuous improvement, while LangSmith Deploy enables managed deployment with state persistence, concurrent sessions, and streaming via CI/CD-driven skill updates.
+
+[Read source](https://www.langchain.com/blog/customers-madrigal)
+
+---
+
+#### Automating Workflows with AI Agents Across the Organization
+
+**Company:** notion  
+**Industry:** Tech
+
+Notion deployed Custom Agents across the organization using a RAG-style setup that grounds responses in Notion databases, wikis, documentation, and knowledge bases via semantic search. Agents use prompt engineering and multi-agent systems, with event-driven triggers (e.g., monitoring Slack) and scheduled executions (e.g., weekly reports). Integrations include Slack, email (Notion Mail), and calendar systems, plus project management systems for task creation and routing.
+
+[Read source](https://www.notion.com/blog/how-notion-uses-custom-agents)
+
+---
+
+#### Building Production-Scale Voice AI with Multi-Model Pipelines and Deployment Infrastructure
+
+**Company:** elevenlabs  
+**Industry:** Tech
+
+ElevenLabs built production-scale voice AI using a cascaded pipeline: speech-to-text transcription, language models for translation/reasoning, and text-to-speech to regenerate audio in a target language while preserving characteristics. They added emotion detection in transcription and pass emotional state to guide text-to-speech. Deployment emphasizes FastAPI, monitoring, databases, API gateway, microservices, guardrails, reliability/scalability, and evals with continuous domain-specific tests.
+
+[Read source](https://www.youtube.com/watch?v=TnL10oBZc6U)
+
+---
+
+#### Multi-Agent System for Interview Analysis and Report Generation at Scale
+
+**Company:** listenlabs  
+**Industry:** Tech
+
+ListenLabs runs a multi-agent platform for user research at scale, with three primary agents: Composer for artifact-based discussion guide creation, a voice-based multimodal interview agent, and a research agent that analyzes qualitative data into charts, video clips, and PowerPoint presentations. The research workflow uses PostgreSQL-backed virtual table concepts, parallelized sub-agent execution, custom reviewer/evaluation agents, RAG/semantic search with embeddings, sandboxed Python via E2B, and trace-based observability for continuous improvement.
+
+[Read source](https://www.youtube.com/watch?v=YTTH-0XXEBE)
+
+---
+
+#### Multi-Agent Architecture for Intelligent Advertising Media Planning
+
+**Company:** spotify  
+**Industry:** Media & Entertainment
+
+Spotify built Ads AI, a multi-agent system for media planning, using Google’s Agent Development Kit (ADK) v0.2.0 and Vertex AI’s Gemini 2.5 Pro. A RouterAgent conditionally triggers specialized agents (Goal, Audience, Budget, Schedule, MediaPlanner) in parallel. gRPC connects components; sessions persist in Google Cloud; performance data lives in PostgreSQL with an in-memory cache. Apollo provides lifecycle and observability.
+
+[Read source](https://engineering.atspotify.com/2026/02/our-multi-agent-architecture-for-smarter-advertising)
+
+---
+
+#### Scaling AI Agents in Production: Building and Operating Hundreds of Autonomous Agents
 
 **Company:** datadog  
 **Industry:** Tech
 
-Datadog built Bits AI SRE, an autonomous agent for production incident investigation in distributed systems. It runs an iterative hypothesis-testing loop: form hypotheses, validate via targeted queries against live telemetry, and repeat until a root cause. The approach shifts from summarizing many tool-call outputs to causal reasoning, using recursive decomposition into sub-hypotheses and pivoting when evidence fails.
+Datadog reports operating over 100 AI agents in production and preparing to scale to thousands more. Deployed agents include Bits AI SRE for autonomous alert investigation, Bits AI Dev for code generation and error fixes, and security analysts for automated security investigations. Key practices include API-first, agent-native design, proactive background agents, Temporal-based durable workflow orchestration, containerized sandboxes, and three-layer evaluation (offline, online, and adaptive). Datadog also emphasizes model/framework agnosticism, robust memory systems, and agent-accessible evaluation via MCP servers.
 
-[Read source](https://www.datadoghq.com/blog/building-bits-ai-sre/)
-
----
-
-#### 2x Engineering Throughput Through AI-First Development Platform
-
-**Company:** intercom  
-**Industry:** Tech
-
-Intercom doubled R&D throughput (merge PRs per head) over nine months by building an AI-first development platform centered on Claude Code. They avoided native plugin mechanisms by syncing plugins to disk via IT, used a base plugin with safety hooks/telemetry, layered developer tools and hundreds of specialized skills, enforced quality with automated hooks and LLM judges, and instrumented usage via Honeycomb plus anonymized Claude session JSON uploaded to S3.
-
-[Read source](https://www.youtube.com/watch?v=BRDKft0-dUU)
+[Read source](https://www.youtube.com/watch?v=Naty_iFtITM)
 
 ---
 
-#### Extreme Harness Engineering: Building Production Systems with Zero Human-Written Code
+#### Building Enterprise AI Agents with Code-First Approach for Trust and Auditability
 
-**Company:** openai  
-**Industry:** Tech
-
-OpenAI’s Frontier Product Exploration team ran a five-month experiment building an internal Electron app with zero human-written code, generating over one million lines across 1,500+ pull requests. They developed “harness engineering” principles and Symphony, an Elixir-based multi-agent orchestration system with six layers (policy, configuration, coordination, execution, integration, observability) and CLI-first control. Agents handled the full PR lifecycle, including autonomous review, merge conflict resolution, and CI/CD merging to main, with observability via Vector, VictoriaMetrics, Grafana, and distributed tracing.
-
-[Read source](https://www.latent.space/p/harness-eng)
-
----
-
-#### LLM-Powered Content Embeddings for Multi-Vertical Search and Recommendations
-
-**Company:** doordash  
-**Industry:** E-commerce
-
-DoorDash used LLM-generated merchant and item profiles to standardize declarative content (ingredients, preparation, cuisine, dietary attributes, contextual info), then encoded those profiles with off-the-shelf embedding models. They orchestrated incremental embedding updates with Metaflow, refreshed embeddings only when underlying content changed, and evaluated models using an LLM-as-a-judge harness. Production retrieval used embedding-based retrieval with cosine similarity and temperature-controlled softmax, plus an item-level EBR pipeline with a fine-tuned Qwen 3 reranker consuming the query, top-k item profiles, and store profile.
-
-[Read source](https://careersatdoordash.com/blog/doordash-llms-to-build-content-embeddings-for-search-and-recommendations/)
-
----
-
-#### Building Durable and Reliable AI Agents at Scale with Dapr Workflows
-
-**Company:** humanlayer  
-**Industry:** Tech
-
-HumanLayer’s case study applies Dapr (CNCF graduated) to production AI agents via the Dapr Agents framework. It targets state loss during failures in long-running workflows, adding workflow orchestration with automatic failure detection/recovery, exactly-once execution guarantees, and support for 30+ state stores. It also covers pub/sub multi-agent collaboration, OpenTelemetry observability, and resiliency features like retry policies and circuit breakers.
-
-[Read source](https://www.youtube.com/watch?v=9gejXxl5JzE)
-
----
-
-#### AI Agent System for Automated Design System Documentation
-
-**Company:** uber  
-**Industry:** Tech
-
-Uber’s design systems team built uSpec, an agentic system that connects AI agents in Cursor to Figma via the open-source Figma Console MCP (Model Context Protocol). Agents use modular skills to generate component specs (anatomy, API docs, properties, color annotations, structure, and multi-platform accessibility) by reading Figma data and rendering templates back into Figma locally.
-
-[Read source](https://www.uber.com/us/en/blog/automate-design-specs/)
-
----
-
-#### Agentic Code Reviewers as System Protectors
-
-**Company:** block  
+**Company:** coinbase  
 **Industry:** Finance
 
-Block built “Builderbot,” an agentic code review system positioned as a continuous “protector” rather than a passive assistant. It shifts protection left by running local checks before push using a standardized Just CLI contract. Reviews use progressive context disclosure via AGENTS.md, Amp’s Code Review Checks in .agents/checks/*.md, and Agent Skills for dynamic context loading.
+Coinbase’s Enterprise Applications and Architecture team ran a six-week “Agentic AI Tiger Team” to standardize enterprise AI agents for internal process automation. They adopted a code-first approach using LangGraph and LangChain, separating deterministic data nodes from probabilistic LLM nodes for unit testing and evaluation. They built observability-first tracing with LangSmith, used evaluation harnesses on curated datasets, and applied an LLM-as-judge pattern for confidence scoring and spot-checks. Human-in-the-loop approvals are recorded in immutable audit records, including accessed data, reasoning paths, and approvals.
 
-[Read source](https://engineering.block.xyz/blog/protecting-our-systems-with-intelligence)
-
----
-
-#### Building Internal AI Agent Infrastructure for Software Development at Scale
-
-**Company:** uber  
-**Industry:** Tech
-
-Uber built an internal AI agent infrastructure for software development at scale, using a layered stack on top of Michelangelo. It includes a model gateway, an internal context layer (source code, docs, Slack, JIRA), an MCP Gateway for unified agent/data integration, and tools like Minion, Uber Agent Builder, and AIFX CLI. Specialized agents include uReview, Autocover, and Shepherd. Adoption metrics include 84% agentic coding users, 65–72% AI-generated IDE code, and 11% PRs opened by agents, alongside a 6x AI cost increase since 2024 and token cost optimization efforts.
-
-[Read source](https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development)
+[Read source](https://www.coinbase.com/en-nl/blog/building-enterprise-AI-agents-at-Coinbase)
 
 ---
 
-#### AI-Driven Development at Scale: Building a Firecracker MicroVM Platform with Autonomous Agents
+#### Strategic Model Management and Multi-Provider Optimization at Scale
 
-**Company:** atlassian  
+**Company:** notion  
 **Industry:** Tech
 
-Atlassian built Fireworks, a Firecracker microVM orchestration platform on Kubernetes, in four weeks using Rovo Dev AI agents with minimal human-written code. The platform includes a scheduler, autoscaler, node agents, envoy ingress layers, raft persistence, and features like 100ms warm starts, live migration, eBPF network policy enforcement, shared volumes, snapshot restore, and sidecar sandboxes.
+Notion deploys LLMs at scale using a multi-provider architecture that preserves optionality across model providers. Its “Auto” model feature handles ~75% of AI traffic, evaluating models on cost-per-capability-per-second and switching every 2–3 weeks. Architecture work—orchestration, compaction, caching, and context management—accounts for up to 3× cost swings, with eval scorecards driving automated switching and error handling/fallback strategies.
 
-[Read source](https://www.atlassian.com/blog/rovo/rovo-dev-platform-driven-development)
+[Read source](https://x.com/sarahmsachs/status/2031473087791902991)
+
+---
+
+#### Autonomous Multi-Phase Software Architecture Execution with LLM Agents
+
+**Company:** cara  
+**Industry:** Healthcare
+
+Cara used Claude Code (Opus 4.6) to autonomously execute 66 software tickets across 2 repositories, writing 536 tests and producing ~20,000 lines of code. They implemented RePPITS (Research, Propose, Plan, Implement, Test, Secure) with persistent file-based memory, parallel subagents, phase gates, and security audits. The output was a composable 5-layer architecture (Foundation, Runtime, Capability, Adapter, Specialty) with a deterministic clinical safety engine and CI/Kubernetes pod health checks.
+
+[Read source](https://widal.substack.com/p/we-shipped-a-66-ticket-architecture)
+
+---
+
+#### AI Agents for ML Experiment Orchestration: Reducing Friction in Machine Learning Workflows
+
+**Company:** teads  
+**Industry:** Media & Entertainment
+
+Teads integrated AI agents into its Datakinator ML experiment platform using MCP (Model Context Protocol). The agents invoke an embedded API via an MCP server to automate experiment configuration and orchestration, building on existing hyperparameter tuning, feature selection, and distributed model training on cloud GPUs. Context tools for dataset probing and error retrieval enabled autonomous error correction. Cost estimation controls and execution refusal thresholds managed cloud cost spikes.
+
+[Read source](https://medium.com/teads-engineering/we-let-ai-agents-orchestrate-our-ml-experiments-fc8606816fde)
+
+---
+
+#### Building a Production LLM Platform for Live Shopping and Trust & Safety
+
+**Company:** whatnot  
+**Industry:** E-commerce
+
+Whatnot built an internal enterprise LLM platform for trust & safety, customer support, and seller assistance. The platform emphasizes velocity (self-serve prompt experimentation with guardrails and post-exposure logging), trust (LLM-as-judge evaluation with calibration workflows and rubrics), and reliability (multi-provider support, default fallbacks, observability, caching, rate limiting, and guardrails).
+
+[Read source](https://medium.com/whatnot-engineering/the-model-is-the-easy-part-building-the-llm-platform-at-whatnot-ec8730fa9bdf)
 
 ---
 
 ### Cool Use Cases
 
-#### Building an Autonomous Software Factory for Notion-like Application Development
+#### Building Custom Agents at Scale: Notion's Multi-Year Journey to Production-Ready Agentic Workflows
 
-**Company:** software_factory  
+**Company:** notion  
 **Industry:** Tech
 
-Software Factory builds a Notion-like collaborative editor (“Memo”) via a fully automated SDLC run by AI agents on the Owner orchestration platform. About 14 scheduled automations maintain the codebase, using GitHub Issues/CLI as the state engine and Sentry for monitoring-driven incident response and bug fixing. Metrics report 88% of PRs completed autonomously, with CI pass ratios around 98%.
+Notion rebuilt its agent harness about 4–5 times (2022–2026) before shipping Custom Agents to production. Key pivots included switching from custom XML to markdown plus SQL-like queries via SQLite syntax, moving from few-shot prompting to declarative tool definitions, and adding progressive tool disclosure with tool search. The production system exposes 100+ tools, uses an evaluation framework with CI regression tests, launch-quality report cards (80–90% pass rates), and “Last Exam” frontier/headroom evals (~30% pass).
 
-[Read source](https://www.youtube.com/watch?v=00Ndri8q8LU)
+[Read source](https://www.latent.space/p/notion)
+
+---
+
+#### Hyper-Personalized Merchandising Through Hybrid LLM and Deep Learning Systems
+
+**Company:** doordash  
+**Industry:** E-commerce
+
+DoorDash uses a hybrid LLM + deep learning architecture for hyper-personalized merchandising. LLMs handle product understanding, natural-language consumer profile generation, and weekly “content blueprint” creation, grounded with RAG. Traditional deep learning models (two-tower embeddings and MTML rankers) perform last-mile ranking under latency constraints. Offline LLM processing is separated from online signal blending using embeddings and retrievals, then final ranking. Optimization uses GEPA within DSPy, with evaluation via quantitative metrics, LLM-as-judge, and human feedback.
+
+[Read source](https://www.infoq.com/presentations/llm-personalization/)
+
+---
+
+#### Multi-Agent AI SRE System for Automated Incident Response and Root Cause Analysis
+
+**Company:** opsworker.ai  
+**Industry:** Tech
+
+OpsWorker.ai’s multi-agent AI SRE system targets incident investigation in Kubernetes-based microservices where rule-based automation struggles with complexity and data volume. Eight specialized agents collaborate: an Orchestrator coordinates topology mapping, signals correlation, change analysis, hypothesis/RCA, remediation planning, prevention recommendations, and policy enforcement, producing structured, auditable workflows that correlate logs, metrics, and traces.
+
+[Read source](https://www.opsworker.ai/blog/what-is-an-ai-sre-agent-and-how-we-implement-an-ai-sre-agent-at-opsworker-ai-multi-agent-logic/)
+
+---
+
+#### Agent-Driven Development for AI Research Using GitHub Copilot CLI
+
+**Company:** github  
+**Industry:** Tech
+
+GitHub Copilot CLI with Claude Opus 4.6 and VSCode powers “eval-agents,” built to analyze agent trajectory JSON logs from TerminalBench2 and SWEBench-Pro. The team uses Copilot SDK (including MCP server access) and an agent-first workflow: /plan then /autopilot, followed by Copilot Code Review until comments stop, plus CI/CD guardrails (typing, linters, integration/end-to-end/contract tests).
+
+[Read source](https://github.blog/ai-and-ml/github-copilot/agent-driven-development-in-copilot-applied-science/)
+
+---
+
+#### Multi-Agent Orchestration for Enterprise Conversational AI
+
+**Company:** atlassian  
+**Industry:** Tech
+
+Atlassian evolved Rovo Chat from a single-agent RAG setup to hierarchical multi-agent orchestration. A hybrid orchestrator breaks complex queries into subtasks step-by-step, using parallel tool calling and prompt engineering. Domain-specialized subagents (e.g., a Jira Agent with JQL documentation search, JQL execution, and entity linking) reduce tool confusion. Dynamic reasoning modes include brainstorming (no tools), tool QnA (parallel tools), and reasoning (multi-step sequential tools with a generated research plan).
+
+[Read source](https://www.atlassian.com/blog/atlassian-engineering/how-rovo-embraces-multi-agent-orchestration)
+
+---
+
+#### AI-Powered Multi-Agent Decision Support System for Strategic Business Decisions
+
+**Company:** coinbase  
+**Industry:** Finance
+
+Coinbase’s RAPID-D augments its RAPID decision framework with a four-agent multi-agent architecture: an Analyst that reviews the RAPID document, a Seeker that generates key questions and performs retrieval from enterprise knowledge bases (RAG), a Devil’s Advocate that constructs arguments against the initial recommendation, and a Synthesizer that evaluates and synthesizes all inputs for the human Decider. It uses Claude 3.7 Sonnet, runs asynchronously for complex decisions, and incorporates real-time stakeholder feedback to optimize subsequent recommendations within the same decision flow. The system includes monitoring, documentation, error handling, and evals, with human-in-the-loop evaluation comparing recommendations to actual RAPID Decider outcomes.
+
+[Read source](https://www.coinbase.com/en-nl/blog/making-smarter-decisions-faster-with-AI-at-Coinbase)
 
 ---
 
 ### Tools & Infrastructure
 
-#### Building Production Data Agents with Long-Running Workflows and Context Management
-
-**Company:** hex  
-**Industry:** Tech
-
-Hex evolved from single-shot text-to-SQL in notebook cells (GPT-3.5 Turbo) to multi-agent systems spanning entire projects. Agents include Notebook, Threads, Semantic Modeling, and Chat with App, unified via shared modular capability bundles. Hex built custom orchestration with long-running workflows on Temporal, plus context harvesting pipelines, tool search/retrieval, ephemeral SQL execution, and evaluation frameworks for long-horizon tasks.
-
-[Read source](https://www.youtube.com/watch?v=Xyh1EqcjGME)
-
----
-
-#### Red-Teaming an AI Agent: Security Testing of goose Through Operation Pale Fire
-
-**Company:** block  
-**Industry:** Finance
-
-Block’s internal red team engagement “Operation Pale Fire” tested goose, an open-source AI coding agent that can take real-world actions via MCP extensions. The team demonstrated prompt injection through Google Calendar MCP invites using invisible zero-width Unicode characters, then pivoted to poisoning goose “shareable recipes” that append to the system prompt. Successful compromise combined social engineering with AI-specific vulnerabilities, leading to mitigations: calendar policy changes, zero-width stripping, recipe transparency, and prompt-injection detection merged into goose, plus monitoring/runbook updates.
-
-[Read source](https://engineering.block.xyz/blog/how-we-red-teamed-our-own-ai-agent-)
-
----
-
-#### AI-Driven Contract Analysis and Extraction at Scale
-
-**Company:** pricewaterhousecooper_/_pwc  
-**Industry:** Legal
-
-PwC’s AIDA (AI-driven annotation) is a production AWS system for extracting structured insights from unstructured contracts. It combines rule-based extraction with LLM-powered natural-language query using Amazon Bedrock. A RAG pipeline uses Bedrock Embeddings Models, semantic indexing in OpenSearch Serverless, hybrid retrieval, and citation linking to source page text. Asynchronous processing runs OCR and extraction on ECS (AWS Fargate) coordinated via SQS, with results stored in Amazon RDS. Guardrails, human-in-the-loop review, CloudTrail auditability, and CloudWatch/X-Ray monitoring support regulated use.
-
-[Read source](https://aws.amazon.com/blogs/machine-learning/extracting-contract-insights-with-pwcs-ai-driven-annotation-on-aws/)
-
----
-
-#### Self-Improving Agent Through LLM-Based Session Analysis
-
-**Company:** factory  
-**Industry:** Tech
-
-Factory’s Signals analyzes AI agent sessions at scale using a multi-stage pipeline built around OpenAI’s batch API and GPT-5.2. Sessions are fetched from BigQuery, filtered to those with at least 30 agentic steps, then processed to extract structured “facets” and detect friction patterns. Findings are correlated with system logs and releases, stored in BigQuery and reported to Slack. When friction crosses predefined thresholds, Signals files Linear tickets that Droid picks up, implements fixes, and submits pull requests; human approval is required before merge.
-
-[Read source](https://factory.ai/news/factory-signals)
-
----
-
-#### AI Agents for Accelerating Model Development and Framework Migration
+#### Cognitive Memory Agent: Building Stateful AI Agents with Multi-Layer Memory Architecture
 
 **Company:** linkedin  
 **Industry:** Tech
 
-LinkedIn built an agent-based framework to accelerate model experimentation and infrastructure development by using LLMs to optimize the AI development process itself. The system combines code-authoring agents for distributed training, comprehensive evaluation for correctness and quality, and GPU microscheduling for efficient compute utilization. “Autopilot for Torch” runs iterative generate–verify–refine loops with structured verifier feedback, then validates on development GPU pods and promotes via Flyte workflows. Early results report strong performance across 100+ OpenML benchmarks, offline metric parity for internal workloads, and 10%+ training throughput improvements on optimized LLM workloads.
+LinkedIn’s Cognitive Memory Agent (CMA) is a horizontal memory platform for stateful, context-aware AI agents. It uses multi-layer memory (conversational, episodic, semantic, procedural) with embeddings stored in vector databases, plus streaming and batch pipelines for summarization and extraction. Retrieval is implemented as an orchestrated reasoning loop that plans memory tool calls and synthesizes answers, with evaluation via a three-tier framework and cost/latency monitoring.
 
-[Read source](https://www.linkedin.com/blog/engineering/ai/ai-helping-build-better-ai-how-agents-accelerate-model-experimentation)
-
----
-
-#### Autonomous Security Agents for Continuous Vulnerability Detection and Remediation
-
-**Company:** cursor  
-**Industry:** Tech
-
-Cursor reports using Cursor Automations to run a fleet of autonomous security agents for continuous vulnerability detection and remediation. Four templates are described: Agentic Security Review, Vuln Hunter, Anybump, and Invariant Sentinel. Agents use a custom security MCP tool deployed as a serverless Lambda function for persistent storage, deduplication, and consistent Slack-formatted reporting.
-
-[Read source](https://cursor.com/blog/security-agents)
+[Read source](https://www.linkedin.com/blog/engineering/ai/the-linkedin-generative-ai-application-tech-stack-personalization-with-cognitive-memory-agent)
 
 ---
 
-#### Building a Software Factory with AI Agents and Automation Loops
+#### Multi-Agent AI Architecture for Site Reliability Engineering in Cloud-Native Infrastructure
 
-**Company:** software_factory  
+**Company:** komodor  
 **Industry:** Tech
 
-Memo is built on the Ona platform using AI agents and automation loops to run a largely autonomous software factory. The pipeline includes hourly feature planning and feature builder PR generation, PR reviewer conversation threads for iterative fixes, and an hourly PR shepherd fail-safe that rebases, resolves merge conflicts, and addresses build failures. Post-merge verification deploys and smoke tests, creating high-priority bug reports on failures. It also integrates Sentry with an incident responder automation every 15 minutes, plus daily metrics updates for lines of code, PRs merged, and test coverage.
+Komodor’s Klaudia AI uses a three-layer multi-agent architecture for cloud-native SRE incident management. It coordinates 50+ domain-specific SME agents (e.g., Kubernetes, GPU/NVIDIA, AWS, ArgoCD, Istio) via workflow orchestrators running Detect → Investigate → Remediate → Optimize → Prevent. A knowledge graph maps entity relationships for relationship-aware context retrieval, alongside RAG from indexed documentation/runbooks/postmortems in a vector database, plus eval, guardrails, and continuous learning components.
 
-[Read source](https://www.youtube.com/watch?v=ELS-DvDT3Yg)
+[Read source](https://komodor.com/blog/multi-agent-ai-sre-has-landed-and-its-built-for-your-most-complex-stacks/)
 
 ---
 
-#### AI-Orchestrated Code Review System at Scale
+#### Terminal-Native AI Coding Agent with Multi-Model Architecture and Adaptive Context Management
 
-**Company:** cloudflare  
+**Company:** opendev  
 **Industry:** Tech
 
-Cloudflare built a CI-native, multi-agent AI code review orchestration around OpenCode. A coordinator spawns OpenCode via Bun.spawn, streams JSONL events, and launches up to seven specialized reviewers (security, performance, code quality, documentation, release, compliance) through a runtime plugin. Findings are produced as structured XML, deduplicated and filtered by a judge pass, with risk-tiered model selection, prompt/token optimization, and circuit-breaker failback.
+OpenDev is an open-source, terminal-native AI coding agent written in Rust that uses a compound multi-model architecture with per-workflow LLM binding. It separates thinking from action (extended ReAct), applies Adaptive Context Compaction with graduated reduction strategies, and uses dual-memory (episodic summaries plus verbatim working memory). Safety is defense-in-depth with schema-level tool gating, runtime approvals, tool validation, and lifecycle hooks. It supports lazy tool discovery via MCP, LSP integration with cached symbol trees, subagent orchestration, and terminal/web UIs (Textual and FastAPI/WebSockets).
 
-[Read source](https://blog.cloudflare.com/ai-code-review/)
-
----
-
-#### AI Agents Accelerating GPU Kernel Engineering for LLM Infrastructure
-
-**Company:** linkedin  
-**Industry:** Tech
-
-LinkedIn built three agentic workflows for Liger Kernel GPU kernel engineering: liger-kernel-dev (PyTorch→Triton kernel creation), liger-autopatch (HuggingFace Transformers model integration), and liger-kernel-perf (performance optimization). Each uses a three-stage pipeline—understanding, acting, verification—with structured profiles and human review checkpoints. The perf loop profiles kernels, optionally uses NVIDIA NCU, generates versioned variants, and blocks regressions beyond a 5% guardrail.
-
-[Read source](https://www.linkedin.com/blog/engineering/ai/ai-helping-build-better-ai-how-agents-accelerate-liger-kernel-engineering)
+[Read source](https://arxiv.org/html/2603.05344v3)
 
 ---
 
@@ -295,284 +295,284 @@ Plain-language roundup: what was built, who built it, and what business outcome 
 
 ### Research Highlights
 
-#### Building Production-Ready AI Agents Through Harness Engineering and Continual Learning
+#### Training Agentic Models with Reinforcement Learning for Production Deployment
 
-**Company:** langchain  
+**Company:** kimi_/_cursor_/_chroma  
 **Industry:** Tech
 
-Langchain’s approach to building production AI agents focuses on wrapping the model with the right “harness” around it—clear instructions, built-in checks, and orchestration logic—so agents can reliably complete specific tasks. They stress custom evaluations tied to real customer needs and continual improvement from production traces, rather than relying only on frontier model power.
+This case study compares three production AI systems that train “agent” models with reinforcement learning to perform real tasks. All three teams focus on the same practical problems: keeping context manageable during long runs, matching training to real production behavior, and designing rewards that don’t lead to bad shortcuts. Kimi improves accuracy and reduces latency with parallel task decomposition; Cursor uses a fast feedback loop from real user traffic; Chroma builds a search agent that edits its own context to stay relevant.
 
-[Read source](https://www.youtube.com/watch?v=NovNcsKX8AU)
-
----
-
-#### Large-Scale OCR Processing of Academic Papers Using AI Coding Agents and Serverless GPU Infrastructure
-
-**Company:** huggingface  
-**Industry:** Tech
-
-Hugging Face needed to convert about 27,000 academic papers into Markdown so users could “chat with paper” in HuggingChat. The papers lacked HTML versions on arXiv, so the team used OCR to fill the gap. They processed the full corpus in about 29–30 hours at an estimated cost of $850, enabling chat for all papers on the platform.
-
-[Read source](https://huggingface.co/blog/nielsr/ocr-papers-jobs)
-
----
-
-#### Using AI Agents for Codebase Refactoring and Monolith Decomposition
-
-**Company:** 1password  
-**Industry:** Tech
-
-1Password applied AI agents to refactor and break apart a large Go system that supports its Unified Access product. The team built tools that analyze code, database dependencies, and production behavior to plan safe service extraction. Agents handled a large migration of 3,000+ call sites quickly, improving productivity by about 20–30% on complex tasks, but they needed human oversight for sequencing and system boundaries.
-
-[Read source](https://1password.com/blog/what-we-learned-using-ai-agents-to-refactor-a-monolith)
+[Read source](https://www.philschmid.de/kimi-composer-context)
 
 ---
 
 ### Industry News
 
-#### AI-Generated Trip Reports for Outdoor Recreation Guides
+#### Building an AI-Powered Slack Agent with MCP Standardization
 
-**Company:** guidesly  
-**Industry:** Other
+**Company:** duolingo  
+**Industry:** Education
 
-Guidesly built Jack AI to help outdoor guides spend less time on marketing. After a trip, guides upload photos and videos, and the system automatically creates marketing content for websites, social media, and email. Guides saw content generation time drop from 13 minutes to 2 minutes and reported major revenue growth for active users.
+Duolingo created an AI agent inside Slack to make its Model Context Protocol (MCP) capabilities easier for employees to use. Instead of asking people to set up complex MCP servers, the bot helps in help desk and incident channels, and it uses approval steps for actions that change things. By April 2026, it reached over 250 weekly users and achieved an 80% upvote rate.
 
-[Read source](https://aws.amazon.com/blogs/machine-learning/how-guidesly-built-ai-generated-trip-reports-for-outdoor-guides-on-aws/)
+[Read source](https://www.youtube.com/watch?v=5sb9iA2v78g)
 
 ---
 
-#### Building and Operating Production AI Agents at Scale with Vercel's Agent Orchestration Platform
+#### Open-Source Agent Orchestration Platform for Multi-Agent Business Automation
 
-**Company:** vercel  
+**Company:** paperclip  
 **Industry:** Tech
 
-Vercel says building AI agents is easier now, but running them reliably at scale is still hard. It describes d0, an internal analytics agent that answers hundreds of data questions daily. Vercel attributes fast development to its platform primitives, and says the same infrastructure supports multiple internal agents and customer-facing products like v0 and Vercel Agent for PR reviews.
+Paperclip is an open-source platform that helps coordinate multiple AI agents across business functions in production. It provides a central way to organize work, manage quality checks, and connect different AI providers without being locked into one. The creator used it to run its own development, including marketing video creation, code reviews, and coordination between engineering and marketing. The project gained rapid community attention, reaching 50,000 GitHub stars in about two months, while still being very early with planned improvements like multi-user support and cloud deployment.
 
-[Read source](https://vercel.com/blog/anyone-can-build-agents-but-it-takes-a-platform-to-run-them)
-
----
-
-#### AI-Powered Incident Investigation for Payment Infrastructure
-
-**Company:** razorpay  
-**Industry:** Finance
-
-Razorpay, a finance infrastructure company, reduced the time on-call engineers spent investigating production incidents. Engineers previously spent 20–40 minutes manually connecting information across multiple monitoring systems. Razorpay created an AI “Oncall Agent” that runs parallel specialist checks and delivers a complete investigation for the engineer to review. After three months in shadow mode, it cut investigation time by 80% (to 90 seconds), improved resolution time by 50–60%, and saved 6–8 hours of engineering work weekly, with more consistent results across experience levels.
-
-[Read source](https://engineering.razorpay.com/project-viveka-from-30-minute-investigations-to-90-second-ai-analysis-e49ec9db2638)
+[Read source](https://www.youtube.com/watch?v=h403btjldDQ)
 
 ---
 
-#### Building an Autonomous AI SRE Agent for Production Incident Investigation
+#### Platform Engineering for AI: Scaling Multi-Agentic Systems with MCP
+
+**Company:** linkedin  
+**Industry:** Tech
+
+LinkedIn moved AI agents from isolated experiments to production systems used by thousands of developers. The platform supports two kinds of agents: ones that help inside the IDE and ones that handle tasks in the background. Background work happens in secure sandboxes, and agents propose changes through normal pull requests for review, testing, and approval. The result is faster help with repetitive engineering work while keeping quality, compliance, and visibility.
+
+[Read source](https://www.infoq.com/podcasts/platform-engineering-scaling-agents/)
+
+---
+
+#### Grassroots AI Skills Marketplace: Scaling AI Capabilities Through Bottom-Up Engineering
+
+**Company:** uber  
+**Industry:** Tech
+
+Uber faced the challenge of scaling AI use across a large engineering organization with 200+ microservices and thousands of engineers. Instead of a top-down mandate, one engineer created an internal marketplace for Claude AI skills. It grew from two skills in October 2024 to over 500 specialized skills in five months. A two-level system balanced safety and speed: a tightly controlled “Golden Marketplace” for production tools and an experimental sandbox for quick testing. The result included broad adoption, automated code review and verification workflows, and wider access to senior engineering knowledge.
+
+[Read source](https://medium.com/activated-thinker/how-uber-secretly-scaled-ai-from-2-to-500-skills-in-5-months-without-a-strategy-25ff894c0f9c)
+
+---
+
+#### Multi-Agent Research and Intelligence Platform for Pharmaceutical Data Integration
+
+**Company:** madrigal  
+**Industry:** Healthcare
+
+Madrigal Pharmaceuticals created an enterprise platform to integrate, search, and synthesize information across different pharmaceutical datasets, including structured systems, documents, and external sources. The system uses role-based permissions and governance guardrails so users access only authorized information, with responses clearly cited. It shortened development for new use cases from weeks to hours and enabled production deployment in weeks rather than months, while letting domain experts contribute to agent skills.
+
+[Read source](https://www.langchain.com/blog/customers-madrigal)
+
+---
+
+#### Automating Workflows with AI Agents Across the Organization
+
+**Company:** notion  
+**Industry:** Tech
+
+Notion used custom AI agents to automate repetitive work across teams, addressing problems like hard-to-find knowledge, manual triage of product feedback, and time-consuming repetitive tasks. Domain-specific agents integrated with tools teams already use, enabling faster customer support answers, automatic feedback routing, and task creation. Adoption spread across engineering, marketing, security, and other teams, shifting the organization toward automation-first thinking.
+
+[Read source](https://www.notion.com/blog/how-notion-uses-custom-agents)
+
+---
+
+#### Building Production-Scale Voice AI with Multi-Model Pipelines and Deployment Infrastructure
+
+**Company:** elevenlabs  
+**Industry:** Tech
+
+ElevenLabs built voice AI for audio generation, transcription, and translation at scale, including real-time voice agents. Their approach combines multiple model steps so dubbing and voice output can preserve delivery and emotion. They focused on product-led growth, stayed close to users through Discord communities, and built enterprise deployment infrastructure with monitoring and evaluations to maintain quality and reliability.
+
+[Read source](https://www.youtube.com/watch?v=TnL10oBZc6U)
+
+---
+
+#### Multi-Agent System for Interview Analysis and Report Generation at Scale
+
+**Company:** listenlabs  
+**Industry:** Tech
+
+ListenLabs is a tech platform that analyzes user research at scale, turning interviews, surveys, and focus group feedback into automated insights and deliverables. It supports the full workflow from study design to data collection and reporting. The system uses multiple specialized agents to create discussion guides, run voice-based conversations, and generate charts, clips, and PowerPoint presentations with quality checks.
+
+[Read source](https://www.youtube.com/watch?v=YTTH-0XXEBE)
+
+---
+
+#### Multi-Agent Architecture for Intelligent Advertising Media Planning
+
+**Company:** spotify  
+**Industry:** Media & Entertainment
+
+Spotify’s advertising planning had fragmented decision logic across Direct, Self-Serve, and Programmatic channels, creating duplicated work and tech debt. It created Ads AI, a unified decision layer that turns natural-language campaign needs into optimized media plans. The system reduced media plan creation from 15–30 minutes to 5–10 seconds and uses historical results from thousands of campaigns.
+
+[Read source](https://engineering.atspotify.com/2026/02/our-multi-agent-architecture-for-smarter-advertising)
+
+---
+
+#### Scaling AI Agents in Production: Building and Operating Hundreds of Autonomous Agents
 
 **Company:** datadog  
 **Industry:** Tech
 
-Datadog created Bits AI SRE to help teams investigate and resolve production incidents in complex distributed systems. It follows an SRE-style process: it forms hypotheses, checks them against live telemetry, and digs deeper until it finds the root cause. Datadog reports up to a 95% reduction in time to resolution and emphasizes evaluation on real production incidents.
+Datadog shares lessons from running more than 100 AI agents in real production settings and planning to scale further. The company describes agents that handle alert investigations, propose code fixes, and automate parts of security investigations. It highlights that success depends less on “intelligence” and more on operational readiness: monitoring, evaluation, and solid LLMOps practices for autonomous work.
 
-[Read source](https://www.datadoghq.com/blog/building-bits-ai-sre/)
-
----
-
-#### 2x Engineering Throughput Through AI-First Development Platform
-
-**Company:** intercom  
-**Industry:** Tech
-
-Intercom, a customer support SaaS company, boosted engineering output by treating internal AI adoption like a product. They built a large library of specialized AI “skills,” added strong quality checks, and tracked how people used the system. Over nine months, they doubled PR throughput, improved code quality, sped up time-to-market, and shifted culture toward agent-first work.
-
-[Read source](https://www.youtube.com/watch?v=BRDKft0-dUU)
+[Read source](https://www.youtube.com/watch?v=Naty_iFtITM)
 
 ---
 
-#### Extreme Harness Engineering: Building Production Systems with Zero Human-Written Code
+#### Building Enterprise AI Agents with Code-First Approach for Trust and Auditability
 
-**Company:** openai  
-**Industry:** Tech
-
-OpenAI’s Frontier Product Exploration team tested whether software can be built and maintained by AI agents without humans writing the code. Over five months, they produced a large internal app through thousands of pull requests, using infrastructure and guardrails so agents could review, resolve conflicts, and deploy. The outcome was high throughput and a shift in human work toward building the systems that let agents operate autonomously.
-
-[Read source](https://www.latent.space/p/harness-eng)
-
----
-
-#### LLM-Powered Content Embeddings for Multi-Vertical Search and Recommendations
-
-**Company:** doordash  
-**Industry:** E-commerce
-
-DoorDash improved search and recommendations across food, grocery, retail, and gifting by creating richer, standardized descriptions of merchants and items using large language models, then turning those descriptions into embeddings for retrieval. They reduced null searches and improved conversion, and their generative personalized homepage carousels increased homepage order rate and offline precision. The approach also helped with cold-start and tail queries, including fairness for small merchants.
-
-[Read source](https://careersatdoordash.com/blog/doordash-llms-to-build-content-embeddings-for-search-and-recommendations/)
-
----
-
-#### Building Durable and Reliable AI Agents at Scale with Dapr Workflows
-
-**Company:** humanlayer  
-**Industry:** Tech
-
-The case study explains why many AI agent systems struggle in real production use at scale—especially when failures happen mid-task and progress is lost, forcing expensive rework. It presents Dapr Agents as a way to make agent workflows more durable, automatically recover from failures, coordinate multiple agents, and provide full visibility for auditing and debugging.
-
-[Read source](https://www.youtube.com/watch?v=9gejXxl5JzE)
-
----
-
-#### AI Agent System for Automated Design System Documentation
-
-**Company:** uber  
-**Industry:** Tech
-
-Uber’s design systems team needed accurate, complete documentation for hundreds of components across multiple technology stacks. They built uSpec to automatically generate full component specifications from Figma, including accessibility details. The system runs locally for enterprise security, produces specs in minutes instead of weeks, and improves consistency and accuracy across the design system.
-
-[Read source](https://www.uber.com/us/en/blog/automate-design-specs/)
-
----
-
-#### Agentic Code Reviewers as System Protectors
-
-**Company:** block  
+**Company:** coinbase  
 **Industry:** Finance
 
-Block, a finance company, faced resilience problems as teams shipped changes that looked fine locally but harmed the overall architecture. It created “Builderbot,” an agentic code review system that acts as a vigilant guardian. The approach catches issues pre-push, reduces the burden on human reviewers, and helps keep changes aligned with the organization’s architectural model.
+Coinbase’s Enterprise Applications and Architecture team formed an “Agentic AI Tiger Team” over six weeks to make internal AI agents more reliable and easier to audit for financial services. They focused on standardizing how agents are built and deployed, with clear records of what data was used and how decisions were made. In that sprint, they put two automations into production, saving 25+ hours per week, and completed two more agents in development.
 
-[Read source](https://engineering.block.xyz/blog/protecting-our-systems-with-intelligence)
-
----
-
-#### Building Internal AI Agent Infrastructure for Software Development at Scale
-
-**Company:** uber  
-**Industry:** Tech
-
-Uber created internal infrastructure so software engineers could use AI agents for development tasks, aiming to reduce “boring” work like upgrades, migrations, and trivial bug fixes and free engineers for more creative work. The company built tools for agent deployment, cost control, and workflow changes, including background agents, a no-code agent builder, and specialized agents for code review, test generation, and migrations. Results showed broad adoption (84% agentic coding users; 92% monthly agent use) but also higher AI costs (6x since 2024) and slower-than-expected uptake that required cultural change and peer-driven sharing.
-
-[Read source](https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development)
+[Read source](https://www.coinbase.com/en-nl/blog/building-enterprise-AI-agents-at-Coinbase)
 
 ---
 
-#### AI-Driven Development at Scale: Building a Firecracker MicroVM Platform with Autonomous Agents
+#### Strategic Model Management and Multi-Provider Optimization at Scale
 
-**Company:** atlassian  
+**Company:** notion  
 **Industry:** Tech
 
-Atlassian used its Rovo Dev AI agent system to build a production-ready platform for running Firecracker microVMs on Kubernetes in four weeks. The goal was to create a secure execution engine with advanced capabilities like fast startup, live migration, and network controls. They did this by letting AI agents handle development, testing, and CI/CD workflows with strong automated validation.
+Notion describes how it keeps LLM costs and performance competitive for millions of users despite volatile pricing, model deprecations, and supplier competition. It uses a multi-provider setup so it can switch models automatically, without customers needing to manage changes. It also improves the “plumbing” around models to cut costs up to 3× while still using top frontier models when they add real value.
 
-[Read source](https://www.atlassian.com/blog/rovo/rovo-dev-platform-driven-development)
+[Read source](https://x.com/sarahmsachs/status/2031473087791902991)
+
+---
+
+#### Autonomous Multi-Phase Software Architecture Execution with LLM Agents
+
+**Company:** cara  
+**Industry:** Healthcare
+
+Cara, a healthcare software platform company, used an LLM-based execution workflow to migrate and build a production-ready healthcare app architecture. They ran 66 work items across two code repositories, generated tests, and delivered a structured multi-layer design in under four hours. Strong compliance and security checks helped catch critical issues, resulting in zero deferred items and only one minor production incident resolved quickly.
+
+[Read source](https://widal.substack.com/p/we-shipped-a-66-ticket-architecture)
+
+---
+
+#### AI Agents for ML Experiment Orchestration: Reducing Friction in Machine Learning Workflows
+
+**Company:** teads  
+**Industry:** Media & Entertainment
+
+Teads, a digital advertising technology company, updated its Datakinator ML experiment platform so data scientists could launch experiments faster. By using AI agents, the system automated tedious setup tasks like parameter selection and feature configuration. It also helped experiments recover from failures. After release, more than 200 experiments ran in 48 hours, with claimed offline metric uplift and direct margin gains, while cost spikes were later controlled.
+
+[Read source](https://medium.com/teads-engineering/we-let-ai-agents-orchestrate-our-ml-experiments-fc8606816fde)
+
+---
+
+#### Building a Production LLM Platform for Live Shopping and Trust & Safety
+
+**Company:** whatnot  
+**Industry:** E-commerce
+
+Whatnot, a live shopping e-commerce platform, built an internal LLM platform to support trust & safety, customer support, and seller help. The company focused on faster prompt iteration, more trustworthy evaluation, and dependable production performance. It also enabled non-technical teams to improve prompts and helped trust reviewers process harassment reports in minutes instead of hours.
+
+[Read source](https://medium.com/whatnot-engineering/the-model-is-the-easy-part-building-the-llm-platform-at-whatnot-ec8730fa9bdf)
 
 ---
 
 ### Cool Use Cases
 
-#### Building an Autonomous Software Factory for Notion-like Application Development
+#### Building Custom Agents at Scale: Notion's Multi-Year Journey to Production-Ready Agentic Workflows
 
-**Company:** software_factory  
+**Company:** notion  
 **Industry:** Tech
 
-Software Factory ran a two-week public experiment to see whether AI agents can handle the full software development lifecycle for a Notion-like collaborative app called Memo. Agents planned, built, reviewed, and deployed the product, with 88% of pull requests finished without human intervention. The project also used monitoring to detect problems and feed fixes back into development.
+Notion, a knowledge work platform for enterprise customers, spent multiple years rebuilding its agent system before launching Custom Agents in production. The goal was to let users automate complex workflows across their workspaces while meeting enterprise expectations for reliability, security, and cost control. The final system supports many tools and powers workflows like bug triaging, email processing, and meeting notes capture.
 
-[Read source](https://www.youtube.com/watch?v=00Ndri8q8LU)
+[Read source](https://www.latent.space/p/notion)
+
+---
+
+#### Hyper-Personalized Merchandising Through Hybrid LLM and Deep Learning Systems
+
+**Company:** doordash  
+**Industry:** E-commerce
+
+DoorDash built a personalization system to help users find relevant items across a large, changing catalog. It combines LLM-based understanding and planning with traditional ranking models so recommendations can adapt to real-time intent while staying fast and cost-aware. The system is tuned using measurable results, LLM evaluations, and human feedback, and it supports multiple shopping moments and use cases.
+
+[Read source](https://www.infoq.com/presentations/llm-personalization/)
+
+---
+
+#### Multi-Agent AI SRE System for Automated Incident Response and Root Cause Analysis
+
+**Company:** opsworker.ai  
+**Industry:** Tech
+
+OpsWorker.ai built a multi-agent AI system to help teams handle complex cloud incidents faster. Instead of only sending alerts, it organizes the investigation like an on-call workflow: it maps system dependencies, connects signals to a timeline, checks what changed, identifies likely root causes, and suggests or performs fixes with safety controls. It also captures lessons to improve future responses.
+
+[Read source](https://www.opsworker.ai/blog/what-is-an-ai-sre-agent-and-how-we-implement-an-ai-sre-agent-at-opsworker-ai-multi-agent-logic/)
+
+---
+
+#### Agent-Driven Development for AI Research Using GitHub Copilot CLI
+
+**Company:** github  
+**Industry:** Tech
+
+On GitHub’s Copilot Applied Science team, a researcher built “eval-agents” to automate analysis of large evaluation logs from benchmarks like TerminalBench2 and SWEBench-Pro. Using an agent-first approach, improved prompting, and CI/CD quality checks, a five-person team created 11 new agents and four new skills in under three days, with 28,858 lines of code added across 345 files.
+
+[Read source](https://github.blog/ai-and-ml/github-copilot/agent-driven-development-in-copilot-applied-science/)
+
+---
+
+#### Multi-Agent Orchestration for Enterprise Conversational AI
+
+**Company:** atlassian  
+**Industry:** Tech
+
+Atlassian improved its enterprise conversational AI, Rovo Chat, for knowledge retrieval and workflow automation. Instead of relying on one agent to handle many tools and domains, it uses specialized subagents and a hybrid orchestrator that adapts as information is retrieved. The result reported is a 3.49% quality improvement over the baseline, plus faster time-to-first-token responses, especially for simpler queries.
+
+[Read source](https://www.atlassian.com/blog/atlassian-engineering/how-rovo-embraces-multi-agent-orchestration)
+
+---
+
+#### AI-Powered Multi-Agent Decision Support System for Strategic Business Decisions
+
+**Company:** coinbase  
+**Industry:** Finance
+
+Coinbase built RAPID-D, an internal AI decision support tool for critical strategic decisions in finance. It’s designed to help people make better choices by surfacing unseen risks and reducing cognitive bias. The system uses multiple specialized AI perspectives, pulls relevant internal knowledge, challenges assumptions, and then presents a synthesized recommendation for human review, improving over the course of the same decision using stakeholder feedback.
+
+[Read source](https://www.coinbase.com/en-nl/blog/making-smarter-decisions-faster-with-AI-at-Coinbase)
 
 ---
 
 ### Tools & Infrastructure
 
-#### Building Production Data Agents with Long-Running Workflows and Context Management
-
-**Company:** hex  
-**Industry:** Tech
-
-Hex, a collaborative data analytics platform, moved from simple one-off question answering to multi-agent help for complex, iterative analysis. It built long-running workflows and project-level context so agents can produce comprehensive reports over time. The company also invested in evaluation and privacy-preserving monitoring to improve reliability, while still working on verification and handling conflicting context.
-
-[Read source](https://www.youtube.com/watch?v=Xyh1EqcjGME)
-
----
-
-#### Red-Teaming an AI Agent: Security Testing of goose Through Operation Pale Fire
-
-**Company:** block  
-**Industry:** Finance
-
-Block ran an internal security exercise, “Operation Pale Fire,” to find weaknesses in goose, its open-source AI coding agent used in production. The team showed how hidden messages in calendar invites and poisoned shared recipes could lead to a real compromise of an employee laptop, helped by social engineering. Block then improved calendar handling, recipe visibility, and prompt-injection detection, and updated monitoring and response steps.
-
-[Read source](https://engineering.block.xyz/blog/how-we-red-teamed-our-own-ai-agent-)
-
----
-
-#### AI-Driven Contract Analysis and Extraction at Scale
-
-**Company:** pricewaterhousecooper_/_pwc  
-**Industry:** Legal
-
-PwC built AIDA to help legal, compliance, and procurement teams pull structured information from long, unstructured contracts that usually require heavy manual review. The system uses rules plus AI question answering to process contracts at scale on AWS. Customer deployments report up to a 90% reduction in manual contract review time, including a 90% reduction in rights research time for a major film and TV studio, supporting faster retrieval and shorter review cycles.
-
-[Read source](https://aws.amazon.com/blogs/machine-learning/extracting-contract-insights-with-pwcs-ai-driven-annotation-on-aws/)
-
----
-
-#### Self-Improving Agent Through LLM-Based Session Analysis
-
-**Company:** factory  
-**Industry:** Tech
-
-Factory built Signals to understand how users experience its AI coding agent at scale, without exposing conversation content to human reviewers. It analyzes thousands of sessions to spot user friction and delight, then connects those patterns to system logs and releases. When friction crosses set thresholds, it automatically creates tickets and drives fixes through code changes, with human approval required before merging. Early results report 73% of issues auto-resolved, with average fix time under 4 hours.
-
-[Read source](https://factory.ai/news/factory-signals)
-
----
-
-#### AI Agents for Accelerating Model Development and Framework Migration
+#### Cognitive Memory Agent: Building Stateful AI Agents with Multi-Layer Memory Architecture
 
 **Company:** linkedin  
 **Industry:** Tech
 
-LinkedIn created an internal AI system that helps teams build better AI faster by improving the development process itself. It uses agents to generate code, check it against clear quality requirements, and refine it repeatedly. The approach supports large-scale work like migrating TensorFlow models to PyTorch, with validation and deployment through existing production workflows. Early results include strong benchmark performance, matching internal offline results, and higher training throughput, alongside reduced manual effort.
+LinkedIn built CMA to help AI agents stay useful over time, not just within a single chat. It stores and retrieves relevant information across multiple memory types so agents can maintain continuity and become more personalized. CMA was integrated into Hiring Assistant, where it helps recruiters by suggesting roles, auto-filling hiring requirements, and surfacing insights from past activity to reduce friction and improve productivity.
 
-[Read source](https://www.linkedin.com/blog/engineering/ai/ai-helping-build-better-ai-how-agents-accelerate-model-experimentation)
-
----
-
-#### Autonomous Security Agents for Continuous Vulnerability Detection and Remediation
-
-**Company:** cursor  
-**Industry:** Tech
-
-Cursor says its PR volume grew 5x over nine months, making traditional security approaches insufficient at scale. To address this, it built Cursor Automations that continuously find and repair vulnerabilities. The company describes four templates for reviewing new PRs, scanning existing code, updating dependencies, and monitoring compliance daily, with results shared through Slack.
-
-[Read source](https://cursor.com/blog/security-agents)
+[Read source](https://www.linkedin.com/blog/engineering/ai/the-linkedin-generative-ai-application-tech-stack-personalization-with-cognitive-memory-agent)
 
 ---
 
-#### Building a Software Factory with AI Agents and Automation Loops
+#### Multi-Agent AI Architecture for Site Reliability Engineering in Cloud-Native Infrastructure
 
-**Company:** software_factory  
+**Company:** komodor  
 **Industry:** Tech
 
-The case study describes how a team built Memo, a note-taking application, using AI agents and automation loops on the Ona platform. The system manages the full development lifecycle—from planning features to deploying and checking results—so human involvement is minimal. It processes pull requests, fixes bugs, and improves its own workflows, aiming to increase development speed while catching production issues through automated verification and reporting.
+Komodor introduced Klaudia AI to help teams manage incidents in complex cloud environments where symptoms and root causes can be far apart. It uses many specialized AI agents and a shared knowledge system to guide investigations, pull relevant documentation, and learn from past incidents. Komodor reports improvements like reduced time to resolve Kubernetes issues and faster pipeline failure diagnosis.
 
-[Read source](https://www.youtube.com/watch?v=ELS-DvDT3Yg)
+[Read source](https://komodor.com/blog/multi-agent-ai-sre-has-landed-and-its-built-for-your-most-complex-stacks/)
 
 ---
 
-#### AI-Orchestrated Code Review System at Scale
+#### Terminal-Native AI Coding Agent with Multi-Model Architecture and Adaptive Context Management
 
-**Company:** cloudflare  
+**Company:** opendev  
 **Industry:** Tech
 
-Cloudflare created a production AI code review system to reduce delays from manual reviews, where first-review wait times were measured in hours. Instead of generic tools, it uses multiple focused AI reviewers working in parallel, coordinated to produce review comments quickly. In the first month it processed many merge requests across thousands of repositories, with a median review time of minutes and a low manual override rate.
+OpenDev is an open-source command-line AI coding assistant designed for real developer workflows in the terminal. It focuses on three practical problems: keeping long sessions from running out of context, reducing the risk of destructive actions, and extending capabilities without overwhelming token limits. It uses multiple models, smarter context trimming, and layered safety to help developers manage source control, run builds, and deploy environments.
 
-[Read source](https://blog.cloudflare.com/ai-code-review/)
-
----
-
-#### AI Agents Accelerating GPU Kernel Engineering for LLM Infrastructure
-
-**Company:** linkedin  
-**Industry:** Tech
-
-LinkedIn used AI agents to speed up and scale GPU kernel work for its open-source Liger Kernel project. Instead of experts manually writing and optimizing custom Triton kernels, the agents automate kernel creation, model integration, and performance tuning through a step-by-step process with human checks. The result included faster kernels, model updates that needed only review, and major internal training efficiency gains.
-
-[Read source](https://www.linkedin.com/blog/engineering/ai/ai-helping-build-better-ai-how-agents-accelerate-liger-kernel-engineering)
+[Read source](https://arxiv.org/html/2603.05344v3)
 
 ---
 
